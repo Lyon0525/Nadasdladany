@@ -1,0 +1,43 @@
+﻿@model Nadasdladany.Models.Article
+
+<div class="card news-card h-100 shadow-sm">
+    @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+    {
+        <a asp-controller="News" asp-action="Details" asp-route-slug="@Model.Slug">
+            <img src="@Url.Content(Model.FeaturedImageUrl)" class="card-img-top" alt="@Model.Title">
+        </a>
+    }
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">
+            <a asp-controller="News" asp-action="Details" asp-route-slug="@Model.Slug" class="text-decoration-none">
+                @Model.Title
+            </a>
+        </h5>
+        <p class="card-text text-muted small mb-2">
+            <i class="bi bi-calendar3 me-1"></i>@Model.PublishedDate.ToString("yyyy. MM. dd.")
+            @if (Model.Category != null)
+            {
+                <span class="ms-2">
+                    <i class="bi bi-tag-fill me-1"></i>
+                    <a asp-controller="News" asp-action="Index" asp-route-categorySlug="@Model.Category.Slug" class="text-muted text-decoration-none">
+                        @Model.Category.Name
+                    </a>
+                </span>
+            }
+        </p>
+        @if (!string.IsNullOrEmpty(Model.Excerpt))
+        {
+            <p class="card-text article-excerpt">@Model.Excerpt</p>
+        }
+        else
+        {
+            var plainContent = System.Text.RegularExpressions.Regex.Replace(Model.Content, "<.*?>", string.Empty);
+            <p class="card-text article-excerpt">@(plainContent.Length > 120 ? plainContent.Substring(0, 120) + "..." : plainContent)</p>
+        }
+        <div class="mt-auto">
+            <a asp-controller="News" asp-action="Details" asp-route-slug="@Model.Slug" class="btn btn-sm btn-primary">
+                Bővebben <i class="bi bi-caret-right-fill"></i>
+            </a>
+        </div>
+    </div>
+</div>

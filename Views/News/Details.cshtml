@@ -1,0 +1,66 @@
+﻿@model Nadasdladany.Models.Article
+
+@{
+    // ViewData["Title"] is set in the controller
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            @* Center content a bit on larger screens *@
+            <article class="news-article-detail bg-white p-4 p-md-5 shadow-sm rounded">
+                <!-- Breadcrumbs -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Főoldal</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="News" asp-action="Index">Hírek</a></li>
+                        @if (Model.Category != null)
+                        {
+                            <li class="breadcrumb-item">
+                                <a asp-controller="News" asp-action="Index" asp-route-categorySlug="@Model.Category.Slug">@Model.Category.Name</a>
+                            </li>
+                        }
+                        <li class="breadcrumb-item active" aria-current="page">@Model.Title.Substring(0, Math.Min(Model.Title.Length, 50))@if(Model.Title.Length > 50){
+                        <text>...</text>
+                                                }
+</li>
+                    </ol>
+                </nav>
+
+                <header class="mb-4">
+                    <h1 class="display-5 fw-bold article-title">@Model.Title</h1>
+                    <div class="text-muted mb-2 article-meta">
+                        <span><i class="bi bi-calendar3 me-1"></i>Közzétéve: @Model.PublishedDate.ToString("yyyy. MMMM dd., HH:mm", new System.Globalization.CultureInfo("hu-HU"))</span>
+                        @if (Model.Category != null)
+                        {
+                            <span class="ms-3"><i class="bi bi-tag-fill me-1"></i>Kategória: @Model.Category.Name</span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Author))
+                        {
+                            <span class="ms-3"><i class="bi bi-person-fill me-1"></i>Szerző: @Model.Author</span>
+                        }
+                    </div>
+                </header>
+
+                @if (!string.IsNullOrEmpty(Model.FeaturedImageUrl))
+                {
+                    <figure class="mb-4 text-center">
+                        <img src="@Url.Content(Model.FeaturedImageUrl)" class="img-fluid rounded shadow-sm article-featured-image" alt="@Model.Title" style="max-height: 450px;">
+                    </figure>
+                }
+
+                <section class="article-content">
+                    @Html.Raw(Model.Content)
+                </section>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <a asp-action="Index" asp-route-categorySlug="@Model.Category?.Slug" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Vissza a @(Model.Category != null ? Model.Category.Name : "Hírek") listához
+                    </a>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,158 @@
+﻿@model Nadasdladany.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = Model.HeroTitle;
+}
+
+<!-- Hero Section -->
+<section class="hero-section text-white text-center py-5 mb-4" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/img/Nadasdladany-hero-banner.jpg') no-repeat center center; background-size: cover;">
+    <div class="container">
+        <h1 class="display-4 fw-bold">@Model.SiteName</h1>
+        <p class="lead col-lg-9 mx-auto">@Model.HeroSubtitle</p>
+        <p>
+            <a asp-controller="News" asp-action="Index" class="btn btn-primary btn-lg mt-3 me-2">
+                Friss Hírek <i class="bi bi-newspaper ms-1"></i>
+            </a>
+            <a asp-controller="Contact" asp-action="Index" class="btn btn-outline-light btn-lg mt-3">
+                Kapcsolat <i class="bi bi-envelope-paper ms-1"></i>
+            </a>
+        </p>
+    </div>
+</section>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content Column (Welcome, News) -->
+        <div class="col-lg-8">
+            <!-- Welcome Section -->
+            <section id="welcome" class="mb-5 p-4 bg-white shadow-sm rounded">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <h2 class="section-title-primary">@Model.WelcomeTitle</h2>
+                        <p class="lead">@Model.WelcomeMessageParagraph1</p>
+                        <p>@Model.WelcomeMessageParagraph2</p>
+                        <p class="mt-3"><em>Tisztelettel,<br />@Model.MayorName<br />Polgármester</em></p>
+                    </div>
+                    <div class="col-lg-5 text-center">
+                        <img src="~/images/mayor-placeholder.jpg" class="img-fluid rounded-circle shadow-lg mayor-image" alt="Polgármester @Model.MayorName">
+                    </div>
+                </div>
+            </section>
+
+            <hr class="my-4">
+
+            <!-- Latest News Section -->
+            <section id="latest-news" class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="section-title-primary">Legfrissebb Híreink</h2>
+                    <a asp-controller="News" asp-action="Index" class="btn btn-outline-primary">
+                        Összes hír <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+
+                @if (Model.LatestNews != null && Model.LatestNews.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var article in Model.LatestNews)
+                        {
+                            <div class="col-md-6 d-flex">
+                                <div class="card news-card h-100 shadow-sm">
+                                    @if (!string.IsNullOrEmpty(article.FeaturedImageUrl))
+                                    {
+                                        <a asp-controller="News" asp-action="Details" asp-route-slug="@article.Slug">
+                                            <img src="@Url.Content(article.FeaturedImageUrl)" class="card-img-top" alt="@article.Title">
+                                        </a>
+                                    }
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title">
+                                            <a asp-controller="News" asp-action="Details" asp-route-slug="@article.Slug" class="text-decoration-none">@article.Title</a>
+                                        </h5>
+                                        <p class="card-text text-muted small mb-2">
+                                            <i class="bi bi-calendar3 me-1"></i>@article.PublishedDate.ToString("yyyy. MM. dd.")
+                                            @if (article.Category != null)
+                                            {
+                                                <span class="ms-2"><i class="bi bi-tag-fill me-1"></i>@article.Category.Name</span>
+                                            }
+                                        </p>
+                                        @if (!string.IsNullOrEmpty(article.Excerpt))
+                                        {
+                                            <p class="card-text article-excerpt">@article.Excerpt</p>
+                                        }
+                                        else
+                                        {
+                                            // Fallback if Excerpt is empty, using a truncated version of Content
+                                            var plainContent = System.Text.RegularExpressions.Regex.Replace(article.Content, "<.*?>", string.Empty);
+                                            <p class="card-text article-excerpt">@(plainContent.Length > 120 ? plainContent.Substring(0, 120) + "..." : plainContent)</p>
+                                        }
+                                        <div class="mt-auto">
+                                            <a asp-controller="News" asp-action="Details" asp-route-slug="@article.Slug" class="btn btn-sm btn-primary">
+                                                Bővebben <i class="bi bi-caret-right-fill"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">Jelenleg nincsenek friss hírek.</div>
+                }
+            </section>
+        </div>
+
+        <!-- Right Sidebar Column (Events Timetable) -->
+        <div class="col-lg-4">
+            <aside class="sticky-top" style="top: 80px;">
+                @* Adjust top for fixed navbar height *@
+                <section id="upcoming-events" class="p-3 bg-light shadow-sm rounded">
+                    <h3 class="section-title-secondary mb-3"><i class="bi bi-calendar-week me-2"></i>Közelgő Események</h3>
+                    @if (Model.UpcomingEvents != null && Model.UpcomingEvents.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var ev in Model.UpcomingEvents)
+                            {
+                                <li class="list-group-item event-item">
+                                    <div class="event-date fw-bold text-primary">
+                                        @ev.StartDate.ToString("yyyy. MMMM dd.", new System.Globalization.CultureInfo("hu-HU"))
+                                        @if (ev.StartDate.TimeOfDay != TimeSpan.Zero)
+                                        {
+                                            <span> - @ev.StartDate.ToString("HH:mm")</span>
+                                        }
+                                    </div>
+                                    <h6 class="event-title mt-1 mb-1">
+                                        @* <a href="#" class="text-decoration-none">@ev.Title</a> *@ @* Link to event details page later *@
+                                        @ev.Title
+                                    </h6>
+                                    @if (!string.IsNullOrEmpty(ev.Location))
+                                    {
+                                        <p class="event-location small text-muted mb-0"><i class="bi bi-geo-alt-fill me-1"></i>@ev.Location</p>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                        <div class="text-center mt-3">
+                            <a asp-controller="Events" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                                Összes esemény <i class="bi bi-arrow-right-short"></i>
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light text-center">Nincsenek közelgő események.</div>
+                    }
+                </section>
+
+                <section id="quick-links-alt" class="mt-4 p-3 bg-white shadow-sm rounded">
+                    <h3 class="section-title-secondary mb-3"><i class="bi bi-link-45deg me-2"></i>Hasznos Hivatkozások</h3>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-folder2-open me-2"></i>Dokumentumtár</a>
+                        <a asp-controller="Contact" asp-action="Index" class="list-group-item list-group-item-action"><i class="bi bi-telephone-fill me-2"></i>Elérhetőségek</a>
+                        <a asp-controller="Municipality" asp-action="Office" class="list-group-item list-group-item-action"><i class="bi bi-building me-2"></i>Polgármesteri Hivatal</a>
+                        <a href="https://www.magyarorszag.hu" target="_blank" class="list-group-item list-group-item-action"><i class="bi bi-box-arrow-up-right me-2"></i>E-ügyintézés</a>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+</div>

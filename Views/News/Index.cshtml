@@ -1,0 +1,126 @@
+﻿@model Nadasdladany.ViewModels.NewsIndexViewModel
+
+@{
+    // ViewData["Title"] is set in the controller
+    var pageTitle = string.IsNullOrEmpty(Model.CurrentCategoryName) ? "Összes Hír" : $"Hírek: {Model.CurrentCategoryName}";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Content Area -->
+        <div class="col-lg-9">
+            <header class="mb-4">
+                <h1 class="section-title-primary">@pageTitle</h1>
+                @if (!string.IsNullOrEmpty(Model.CurrentCategorySlug))
+                {
+                    <a asp-controller="News" asp-action="Index" class="btn btn-sm btn-outline-secondary mb-3">
+                        <i class="bi bi-x-circle me-1"></i>Szűrés törlése (Összes hír)
+                    </a>
+                }
+            </header>
+
+            @if (Model.Articles.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var article in Model.Articles)
+                    {
+                        <div class="col-md-6 d-flex">
+                            <partial name="_ArticleCard" model="article" />
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                       asp-route-page="@(Model.CurrentPage - 1)">Előző</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">Előző</span>
+                                </li>
+                            }
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                       asp-route-page="@i">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.HasNextPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                       asp-route-page="@(Model.CurrentPage + 1)">Következő</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">Következő</span>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    @if (!string.IsNullOrEmpty(Model.CurrentCategoryName))
+                    {
+                        @:Ebben a kategóriában (@Model.CurrentCategoryName) jelenleg nincsenek hírek.
+                    }
+                    else
+                    {
+                        @:Jelenleg nincsenek elérhető hírek.
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar for Categories -->
+        <div class="col-lg-3">
+            <aside class="sticky-top" style="top: 80px;"> @* Adjust top for fixed navbar height *@
+                <div class="p-3 bg-light shadow-sm rounded mt-4 mt-lg-0">
+                    <h4 class="section-title-secondary mb-3"><i class="bi bi-tags-fill me-2"></i>Kategóriák</h4>
+                    @if (Model.Categories.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item @(string.IsNullOrEmpty(Model.CurrentCategorySlug) ? "active" : "")">
+                                <a asp-controller="News" asp-action="Index" class="text-decoration-none @(string.IsNullOrEmpty(Model.CurrentCategorySlug) ? "text-white fw-bold" : "")">
+                                    Összes hír
+                                </a>
+                            </li>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <li class="list-group-item @(Model.CurrentCategorySlug == category.Slug ? "active" : "")">
+                                    <a asp-controller="News" asp-action="Index" asp-route-categorySlug="@category.Slug" class="text-decoration-none @(Model.CurrentCategorySlug == category.Slug ? "text-white fw-bold" : "")">
+                                        @category.Name
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Nincsenek kategóriák.</p>
+                    }
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
