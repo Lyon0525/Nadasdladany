@@ -1,29 +1,27 @@
-/* Global Styles */
 body {
-    padding-top: 56px; /* Adjust if your navbar height is different */
+    padding-top: 56px; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa; /* Light grey background for the page */
+    background-color: #f8f9fa; 
 }
 
 .main-content-area {
-    padding-top: 1.5rem; /* Space below the fixed navbar */
+    padding-top: 1.5rem; 
     padding-bottom: 1.5rem;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: 100; /* Behind the navbar */
-    padding: 56px 0 0; /* Height of navbar */
+    z-index: 100; 
+    padding: 56px 0 0; 
     box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
 @media (max-width: 767.98px) {
     .sidebar {
-        top: 56px; /* Start below navbar on small screens when it's expanded */
+        top: 56px; 
         padding-top: 0;
     }
 }
@@ -31,10 +29,10 @@ body {
 .sidebar-sticky {
     position: relative;
     top: 0;
-    height: calc(100vh - 56px); /* Adjust if navbar height changes */
+    height: calc(100vh - 56px); 
     padding-top: .5rem;
     overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content */
+    overflow-y: auto; 
 }
 
 .sidebar .nav-link {
@@ -45,12 +43,12 @@ body {
 
     .sidebar .nav-link .bi {
         margin-right: 8px;
-        color: #6c757d; /* Icon color */
+        color: #6c757d; 
     }
 
     .sidebar .nav-link.active,
     .sidebar .nav-link:hover {
-        color: var(--bs-primary); /* Or your theme's primary color */
+        color: var(--bs-primary); 
     }
 
         .sidebar .nav-link.active .bi,
@@ -65,12 +63,10 @@ body {
 }
 
 
-/* Footer Styles */
 .footer {
     font-size: 0.9em;
 }
 
-/* Section Titles (general utility, can be refined) */
 .section-title-primary {
     color: var(--bs-primary);
     border-bottom: 2px solid var(--bs-primary);
@@ -80,14 +76,14 @@ body {
 }
 
 .section-title-secondary {
-    color: var(--bs-secondary); /* Bootstrap's secondary color, or choose another */
-    font-size: 1.25rem; /* Example size */
+    color: var(--bs-secondary); /
+    font-size: 1.25rem; 
     border-bottom: 1px solid #ddd;
     padding-bottom: 0.25rem;
     margin-bottom: 1rem;
 }
 
-/* News Card specific styles if not already in Index.cshtml */
+
 .news-card img.card-img-top {
     height: 200px;
     object-fit: cover;
@@ -95,17 +91,16 @@ body {
 
 .article-excerpt {
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* Show 3 lines */
+    -webkit-line-clamp: 3; 
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 4.5em; /* Adjust based on line-height, approx 3 lines */
-    max-height: 4.5em; /* Adjust based on line-height, approx 3 lines */
+    min-height: 4.5em; 
+    max-height: 4.5em; 
     font-size: 0.95rem;
     color: #555;
 }
 
-/* Event Item in sidebar */
 .event-item {
     border-bottom: 1px solid #eee;
     padding-top: 0.75rem;
@@ -129,66 +124,55 @@ body {
     font-size: 0.85rem;
 }
 
-/* Hero Section - ensure it fits well within the main content area */
+
 .hero-section {
-    /* If main-content-area has padding, you might need to adjust hero width/margins.
-       For now, it's contained within the main-content-area's padding. */
-    border-radius: 0.25rem; /* Optional: slight rounding if it's not full bleed */
+    border-radius: 0.25rem; 
 }
 
 .navbar-brand {
-    /* d-flex align-items-center is on the <a> tag in HTML,
-       so these properties on .navbar-brand itself are less critical for layout here
-       but good for fallback or direct styling of the <a> container if needed. */
-    padding-top: .25rem; /* Fine-tune vertical padding if needed */
+    padding-top: .25rem; 
     padding-bottom: .25rem;
 }
 
 .navbar-brand-logo-img {
-    height: 45px; /* Make the logo image bigger - adjust as needed */
-    width: auto; /* Maintain aspect ratio */
-    margin-right: 10px; /* Space between logo and text */
+    height: 45px; 
+    width: auto; 
+    margin-right: 10px; 
 }
 
 .navbar-brand-text {
-    font-family: 'Playfair Display', serif; /* Elegant serif font for the name */
-    /* OR use Montserrat if you prefer: */
-    /* font-family: 'Montserrat', sans-serif; */
-    font-size: 1.5rem; /* Adjust size as needed to balance with the logo */
-    font-weight: 700; /* Bold */
-    line-height: 1; /* Can help fine-tune vertical alignment with image */
-    /* color: #fff; /* Handled by .navbar-dark from Bootstrap, but can be explicit */
+    font-family: 'Playfair Display', serif; 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    line-height: 1; 
 }
 
-/* Ensure color contrast for .navbar-dark (like your .bg-primary) */
 .navbar-dark .navbar-brand-text {
     color: #ffffff;
 }
 
 .navbar-dark .navbar-brand:hover .navbar-brand-text,
 .navbar-dark .navbar-brand:focus .navbar-brand-text {
-    color: #f0f0f0; /* Slightly off-white on hover/focus */
+    color: #f0f0f0; 
 }
 
-/* Adjustments for when navbar collapses (optional, if needed) */
-@media (max-width: 991.98px) { /* Corresponds to Bootstrap's lg breakpoint */
+@media (max-width: 991.98px) { 
     .navbar-brand-logo-img {
-        height: 40px; /* Slightly smaller logo on mobile if needed */
+        height: 40px; 
     }
 
     .navbar-brand-text {
-        font-size: 1.3rem; /* Slightly smaller text on mobile if needed */
+        font-size: 1.3rem; 
     }
 }
 
-/* Styles specific to HomePage can go here or in site.css */
 .hero-section {
-    min-height: 60vh; /* Matches old style */
+    min-height: 60vh; 
     display: flex;
     align-items: center;
-    margin-top: -1.5rem; /* Adjust if navbar height changes or layout padding */
-    margin-left: -1.5rem; /* Adjust based on main-content-area padding */
-    margin-right: -1.5rem; /* Adjust based on main-content-area padding */
+    margin-top: -1.5rem; 
+    margin-left: -1.5rem; 
+    margin-right: -1.5rem; 
 }
 
 .hero-coat-of-arms {
@@ -198,8 +182,8 @@ body {
 }
 
 .mayor-image {
-    max-width: 250px; /* Adjusted from old */
-    border: 5px solid #fff; /* Optional: white border */
+    max-width: 250px; 
+    border: 5px solid #fff; 
 }
 
 .news-card img.card-img-top {
@@ -209,15 +193,15 @@ body {
 
 .article-excerpt {
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* Show 3 lines */
+    -webkit-line-clamp: 3; 
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 4.5em; /* approx 3 lines */
-    max-height: 4.5em; /* approx 3 lines */
+    min-height: 4.5em; 
+    max-height: 4.5em; 
 }
 
-.section-title-primary { /* For main content titles */
+.section-title-primary { 
     color: var(--bs-primary);
     border-bottom: 2px solid var(--bs-primary);
     padding-bottom: 0.25rem;
@@ -225,7 +209,7 @@ body {
     margin-bottom: 1rem;
 }
 
-.section-title-secondary { /* For sidebar titles */
+.section-title-secondary { 
     color: var(--bs-secondary);
     font-size: 1.25rem;
 }
@@ -254,7 +238,7 @@ body {
     font-size: 0.9em;
 }
 
-.article-content img { /* Basic responsive images within content */
+.article-content img { 
     max-width: 100%;
     height: auto;
     border-radius: 0.25rem;
@@ -263,5 +247,5 @@ body {
 }
 
 .article-featured-image {
-    /* Add any specific styling for the main featured image */
+    
 }
