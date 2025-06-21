@@ -79,3 +79,24 @@ yarn.lock         # If you're not committing it and relying on package.json
 # Rider specific
 *.resharper
 _ReSharper.*/
+/.vs/Nadasdladany/DesignTimeBuild/.dtbcache.v2
+/.vs/Nadasdladany/FileContentIndex/06cbe87f-5874-4e8a-8e10-1311164701d8.vsidx
+/.vs/Nadasdladany/FileContentIndex/23c16a0b-3a0f-470f-ba24-b451ee385a26.vsidx
+/.vs/Nadasdladany/FileContentIndex/30cb9784-5cba-4bd5-92a5-b89f56356a0f.vsidx
+/.vs/Nadasdladany/FileContentIndex/347e4caa-1ebb-43ae-ae9c-50ed7d946845.vsidx
+/.vs/Nadasdladany/FileContentIndex/64590e67-1703-4728-a616-666c2773efca.vsidx
+/.vs/Nadasdladany/FileContentIndex/88c88b8e-15de-4c60-81a8-6f112c5fa587.vsidx
+/.vs/Nadasdladany/FileContentIndex/a1365685-cc33-4772-b8c5-57b7a155efd3.vsidx
+/.vs/Nadasdladany/FileContentIndex/b20ce42b-ab2c-482f-b3e0-595372ef2620.vsidx
+/.vs/Nadasdladany/FileContentIndex/cbf7c433-aeb7-4caa-bb70-6420e9088e4a.vsidx
+/.vs/Nadasdladany/FileContentIndex/d321fcdf-b9fb-45d5-bce2-be9de75a9643.vsidx
+/.vs/Nadasdladany/v17/DocumentLayout.backup.json
+/.vs/Nadasdladany/v17/DocumentLayout.json
+/.vs/Nadasdladany/DesignTimeBuild/.dtbcache.v2
+/.vs/Nadasdladany/FileContentIndex/06cbe87f-5874-4e8a-8e10-1311164701d8.vsidx
+/.vs/Nadasdladany/FileContentIndex/347e4caa-1ebb-43ae-ae9c-50ed7d946845.vsidx
+/.vs/Nadasdladany/FileContentIndex/64590e67-1703-4728-a616-666c2773efca.vsidx
+/.vs/Nadasdladany/FileContentIndex/a1365685-cc33-4772-b8c5-57b7a155efd3.vsidx
+/.vs/Nadasdladany/FileContentIndex/d321fcdf-b9fb-45d5-bce2-be9de75a9643.vsidx
+/.vs/Nadasdladany/v17/DocumentLayout.backup.json
+/.vs/Nadasdladany/v17/DocumentLayout.json
