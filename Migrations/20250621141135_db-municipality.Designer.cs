@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nadasdladany.Data;
 
@@ -11,9 +12,11 @@ using Nadasdladany.Data;
 namespace Nadasdladany.Migrations
 {
     [DbContext(typeof(NadasdladanyDbContext))]
-    partial class NadasdladanyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250621141135_db-municipality")]
+    partial class dbmunicipality
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,48 +180,6 @@ namespace Nadasdladany.Migrations
                             Name = "Közlemények",
                             Slug = "kozlemenyek"
                         });
-                });
-
-            modelBuilder.Entity("Nadasdladany.Models.ContactSubmission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AdminNotes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Subject")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime>("SubmittedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ContactSubmissions");
                 });
 
             modelBuilder.Entity("Nadasdladany.Models.Document", b =>
@@ -481,137 +442,6 @@ namespace Nadasdladany.Migrations
                             Slug = "nadasdladanyi-falunap-2026",
                             StartDate = new DateTime(2026, 6, 9, 10, 0, 0, 0, DateTimeKind.Utc),
                             Title = "Nádasdladányi Falunap 2026"
-                        });
-                });
-
-            modelBuilder.Entity("Nadasdladany.Models.Institution", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("IconCssClass")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Slug")
-                        .HasMaxLength(160)
-                        .HasColumnType("nvarchar(160)");
-
-                    b.Property<string>("WebsiteUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Slug")
-                        .IsUnique()
-                        .HasFilter("[Slug] IS NOT NULL");
-
-                    b.ToTable("Institutions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Address = "Nádasdladány, Iskola utca 1. (P)",
-                            Description = "Községünk általános iskolája, amely alapfokú oktatást biztosít a helyi és környékbeli gyermekek számára.",
-                            DisplayOrder = 10,
-                            Email = "iskola@nadasdladany.edu.hu (P)",
-                            IconCssClass = "bi bi-book-fill",
-                            ImageUrl = "/images/institutions/iskola-placeholder.jpg",
-                            IsPublished = true,
-                            Name = "Nádasdy Ferenc Általános Iskola",
-                            PhoneNumber = "+36 (22) 234-567 (P)",
-                            Slug = "nadasdy-ferenc-altalanos-iskola",
-                            WebsiteUrl = "http://www.nadasdyiskola-nl.hu/"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Address = "Nádasdladány, Óvoda köz 2. (P)",
-                            Description = "Szeretetteljes és biztonságos környezetben neveljük a legkisebbeket, felkészítve őket az iskolás évekre.",
-                            DisplayOrder = 20,
-                            Email = "ovoda@nadasdladany.edu.hu (P)",
-                            IconCssClass = "bi bi-palette-fill",
-                            ImageUrl = "/images/institutions/ovoda-placeholder.jpg",
-                            IsPublished = true,
-                            Name = "Napraforgó Óvoda és Bölcsőde",
-                            PhoneNumber = "+36 (22) 345-678 (P)",
-                            Slug = "napraforgo-ovoda-es-bolcsode"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Address = "Nádasdladány, Kultúra tér 3. (P)",
-                            Description = "Közösségi programok, kulturális események, kiállítások és könyvtári szolgáltatások helyszíne.",
-                            DisplayOrder = 30,
-                            Email = "muvhaz@nadasdladany.info (P)",
-                            IconCssClass = "bi bi-collection-play-fill",
-                            ImageUrl = "/images/institutions/muvhaz-placeholder.jpg",
-                            IsPublished = true,
-                            Name = "Művelődési Ház és Könyvtár",
-                            PhoneNumber = "+36 (22) 456-789 (P)",
-                            Slug = "muvelodesi-haz-es-konyvtar",
-                            WebsiteUrl = "http://www.nadasdladanyimuvelodesihaz.hu"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Address = "Nádasdladány, Egészség út 4. (P)",
-                            Description = "Háziorvosi és gyermekorvosi ellátás a település lakosai számára.",
-                            DisplayOrder = 40,
-                            IconCssClass = "bi bi-heart-pulse-fill",
-                            ImageUrl = "/images/institutions/orvosi-rendelo-placeholder.jpg",
-                            IsPublished = true,
-                            Name = "Orvosi Rendelő (Háziorvos)",
-                            PhoneNumber = "+36 (22) 567-890 (P)",
-                            Slug = "orvosi-rendelo-haziorvos"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Address = "Nádasdladány, Egészség út 4/B. (P)",
-                            Description = "Fogászati alapellátás és szakellátás.",
-                            DisplayOrder = 50,
-                            IconCssClass = "bi bi-bandaid-fill",
-                            ImageUrl = "/images/institutions/fogorvosi-rendelo-placeholder.jpg",
-                            IsPublished = true,
-                            Name = "Fogorvosi Rendelő",
-                            PhoneNumber = "+36 (22) 678-901 (P)",
-                            Slug = "fogorvosi-rendelo"
                         });
                 });
 

@@ -1,0 +1,97 @@
+﻿@model IEnumerable<Nadasdladany.Models.Representative>
+@{
+    ViewData["Title"] = "Képviselő-testület";
+    var memberCount = Model?.Count() ?? 0;
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Ismerje meg Nádasdladány Község Önkormányzatának Képviselő-testületének tagjait és munkáját.</p>
+    </div>
+
+    <div class="card shadow-sm mb-5 reveal-on-scroll" style="animation-delay: 0.1s;">
+        <div class="card-body">
+            <h3 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>A Testületről</h3>
+            <p>Nádasdladány Község Önkormányzatának Képviselő-testülete a település legfőbb döntéshozó szerve. Tagjai a helyi választópolgárok bizalmából látják el feladataikat, céljuk a község fejlődésének elősegítése, a helyi közügyek hatékony intézése és a lakosság érdekeinek képviselete.</p>
+            <p>A testület rendszeres üléseken tárgyalja és fogadja el a település működésével kapcsolatos rendeleteket és határozatokat. Munkájukat bizottságok segítik.</p>
+            @if (memberCount > 0)
+            {
+                <p><strong>A Képviselő-testület tagjainak száma:</strong> @memberCount fő</p>
+            }
+        </div>
+    </div>
+
+    <h3 class="text-primary mb-4 reveal-on-scroll text-center" style="animation-delay: 0.2s;">A Képviselő-testület Tagjai</h3>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4 justify-content-center">
+            @foreach (var rep in Model.OrderBy(r => r.DisplayOrder).ThenBy(r => r.Name)) // Ensure consistent ordering
+            {
+                var roleDisplay = rep.CustomTitleOverride ?? rep.Role.ToString();
+                // If role is Polgarmester, make it "Polgármester", etc. - could use a helper for Hungarian display names of enums
+                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Polgarmester) { roleDisplay = "Polgármester"; }
+                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Alpolgarmester) { roleDisplay = "Alpolgármester"; }
+                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Kepviselo) { roleDisplay = "Képviselő"; }
+
+
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(rep) * 0.05 + 0.2)s;">
+                    <div class="card representative-card h-100 shadow w-100 text-center">
+                        @if (!string.IsNullOrEmpty(rep.ImageUrl))
+                        {
+                            <img src="@Url.Content(rep.ImageUrl)" class="card-img-top representative-img mx-auto mt-3" alt="@rep.Name">
+                        }
+                        else
+                        {
+                            <img src="~/images/placeholder/avatar-placeholder.png" class="card-img-top representative-img mx-auto mt-3" alt="Avatar">
+                        }
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@rep.Name</h5>
+                            <p class="card-text text-muted">@roleDisplay</p>
+                            <div class="mt-auto">
+                                @if (!string.IsNullOrEmpty(rep.Email))
+                                {
+                                    <a href="mailto:@rep.Email" class="btn btn-sm btn-outline-primary"><i class="bi bi-envelope-fill me-1"></i>E-mail</a>
+                                }
+                                @if (!string.IsNullOrEmpty(rep.PhoneNumber))
+                                {
+                                    <a href="tel:@rep.PhoneNumber.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "")" class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-telephone-fill me-1"></i>Telefon</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">A képviselő-testület tagjainak adatai feltöltés alatt.</div>
+    }
+    <hr class="my-5">
+    <div class="text-center reveal-on-scroll">
+        <a asp-controller="Documents" asp-action="Index" asp-route-categorySlug="jegyzokonyvek" class="btn btn-info btn-lg">
+            <!-- Ensure "jegyzokonyvek" slug exists for DocumentCategory -->
+            <i class="bi bi-file-earmark-text-fill me-2"></i>Testületi Ülések Jegyzőkönyvei
+        </a>
+    </div>
+</div>
+<style>
+    .representative-card .representative-img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #dee2e6;
+    }
+
+    .representative-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+        .representative-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+        }
+</style>

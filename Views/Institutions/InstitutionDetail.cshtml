@@ -1,0 +1,97 @@
+﻿@model Nadasdladany.Models.Institution
+@{
+    ViewData["Title"] = Model.Name;
+    var culture = new System.Globalization.CultureInfo("hu-HU"); // For date formatting if needed
+}
+
+<div class="container content-padding">
+    <nav aria-label="breadcrumb" class="mb-4 pt-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Kezdőlap</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Institutions" asp-action="Index">Intézmények</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name.Substring(0, Math.Min(Model.Name.Length, 60))@(Model.Name.Length > 60 ? "..." : "")</li>
+        </ol>
+    </nav>
+
+    <article class="institution-detail-page bg-white p-4 p-md-5 shadow-sm rounded">
+        <div class="row">
+            <div class="col-lg-4 col-md-5 text-center mb-4 mb-md-0">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Url.Content(Model.ImageUrl)" alt="@Model.Name" class="img-fluid rounded shadow-sm institution-detail-image" style="max-height:350px; width:auto;" />
+                }
+                else if (!string.IsNullOrEmpty(Model.IconCssClass))
+                {
+                    <div class="institution-detail-icon-placeholder d-flex align-items-center justify-content-center p-5 bg-light rounded">
+                        <i class="@Model.IconCssClass" style="font-size: 7rem; color: var(--bs-secondary);"></i>
+                    </div>
+                }
+                else
+                {
+                    <img src="~/images/placeholder/institution-detail-default.jpg" alt="Intézmény" class="img-fluid rounded shadow-sm institution-detail-image" />
+                    <!-- Add a default placeholder image to wwwroot/images/placeholder/ -->
+                }
+            </div>
+            <div class="col-lg-8 col-md-7">
+                <h1 class="display-5 institution-title-detail mb-3">@Model.Name</h1>
+                <hr />
+                @if (!string.IsNullOrEmpty(Model.Address))
+                {
+                    <p class="lead text-muted"><i class="bi bi-geo-alt-fill me-2 text-primary"></i><strong>Cím:</strong> @Model.Address</p>
+                }
+                @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                {
+                    <p class="lead text-muted"><i class="bi bi-telephone-fill me-2 text-primary"></i><strong>Telefon:</strong> <a href="tel:@Model.PhoneNumber.Replace(" ", "")">@Model.PhoneNumber</a></p>
+                }
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <p class="lead text-muted"><i class="bi bi-envelope-fill me-2 text-primary"></i><strong>E-mail:</strong> <a href="mailto:@Model.Email">@Model.Email</a></p>
+                }
+                @if (!string.IsNullOrEmpty(Model.WebsiteUrl))
+                {
+                    <p class="lead text-muted">
+                        <i class="bi bi-link-45deg me-2 text-primary"></i><strong>Weboldal:</strong>
+                        <a href="@Model.WebsiteUrl" target="_blank" rel="noopener noreferrer">@Model.WebsiteUrl.Replace("http://", "").Replace("https://", "")</a>
+                    </p>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <div class="mt-4 pt-4 border-top institution-description-full">
+                <h3 class="text-primary mb-3">Részletes Információk</h3>
+                @Html.Raw(Model.Description) @* Assuming Description can contain HTML from admin editor *@
+            </div>
+        }
+    </article>
+
+    <div class="mt-5 mb-3 text-center">
+        <a asp-action="Index" asp-controller="Institutions" class="btn btn-lg btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle-fill me-2"></i>Vissza az Intézményekhez
+        </a>
+    </div>
+</div>
+
+<style>
+    .institution-title-detail {
+        color: var(--bs-primary);
+    }
+
+    .institution-detail-image, .institution-detail-icon-placeholder {
+        border: 1px solid #dee2e6; /* Light border for images/placeholders */
+    }
+
+    .institution-description-full img { /* Ensure images within HTML content are responsive */
+        max-width: 100%;
+        height: auto;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumb-item a {
+        text-decoration: none;
+    }
+</style>

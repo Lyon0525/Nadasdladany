@@ -1,0 +1,108 @@
+﻿@model Nadasdladany.Models.Event
+@{
+    ViewData["Title"] = Model.Title;
+    var culture = new System.Globalization.CultureInfo("hu-HU");
+}
+
+<div class="container content-padding">
+    <nav aria-label="breadcrumb" class="mb-4 pt-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Kezdőlap</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Events" asp-action="Index">Események</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title.Substring(0, Math.Min(Model.Title.Length, 60))@(Model.Title.Length > 60 ? "..." : "")</li>
+        </ol>
+    </nav>
+
+    <article class="event-detail bg-white p-4 p-md-5 shadow-sm rounded">
+        <header class="mb-4">
+            <h1 class="display-5 event-title-detail mb-3">@Model.Title</h1>
+            <div class="event-meta border-bottom pb-3 mb-3">
+                <p class="lead text-primary mb-1">
+                    <i class="bi bi-calendar3-event me-2"></i>
+                    <strong>Időpont:</strong>
+                    @Model.StartDate.ToString("yyyy. MMMM dd., HH:mm", culture)
+                    @if (Model.EndDate.HasValue)
+                    {
+                        @: –
+                        if (Model.EndDate.Value.Date == Model.StartDate.Date) // Same day, just show end time
+                        {
+                            @Model.EndDate.Value.ToString("HH:mm", culture)
+                        }
+                        else // Different day, show full end date and time
+                        {
+                            @Model.EndDate.Value.ToString("yyyy. MMMM dd., HH:mm", culture)
+                        }
+                    }
+                    @if (Model.IsAllDay)
+                    {
+                        <span class="badge bg-info text-dark ms-2">Egész napos</span>
+                    }
+                </p>
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <p class="lead text-muted mb-1"><i class="bi bi-geo-alt-fill me-2"></i><strong>Helyszín:</strong> @Model.Location</p>
+                }
+            </div>
+        </header>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <section class="event-content-full mb-4">
+                <h4 class="mb-3">Részletes leírás:</h4>
+                @Html.Raw(Model.Description) @* Assumes Model.Description contains HTML from a rich text editor *@
+            </section>
+        }
+
+        <div class="event-additional-info mt-4 pt-4 border-top">
+            @if (!string.IsNullOrEmpty(Model.Organizer))
+            {
+                <p><strong><i class="bi bi-person-gear me-2"></i>Szervező:</strong> @Model.Organizer</p>
+            }
+            @if (!string.IsNullOrEmpty(Model.ContactInfo))
+            {
+                <p><strong><i class="bi bi-telephone-forward-fill me-2"></i>Elérhetőség:</strong> @Model.ContactInfo</p>
+            }
+            @if (!string.IsNullOrEmpty(Model.EventUrl))
+            {
+                <p class="mt-3">
+                    <a href="@Model.EventUrl" class="btn btn-custom-primary" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-link-45deg me-2"></i>További Információ / Regisztráció
+                    </a>
+                </p>
+            }
+        </div>
+    </article>
+
+    <div class="mt-5 mb-3 text-center">
+        <a asp-action="Index" asp-controller="Events" class="btn btn-lg btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle-fill me-2"></i>Vissza az összes eseményhez
+        </a>
+    </div>
+</div>
+
+<style>
+    .event-title-detail {
+        color: var(--bs-primary); /* Your theme's primary color */
+    }
+
+    .event-meta .lead {
+        font-size: 1.1rem; /* Slightly smaller than default lead */
+    }
+
+    .event-content-full img { /* Ensure images within HTML content are responsive */
+        max-width: 100%;
+        height: auto;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumb-item a {
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d; /* Bootstrap's default muted color */
+    }
+</style>

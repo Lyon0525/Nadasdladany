@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nadasdladany.Data;
 using Nadasdladany.Models;
 using Nadasdladany.ViewModels;
 
-namespace Nadasdladany.Data
+namespace Nadasdladany.Controllers
 {
     public class NewsController : Controller
     {

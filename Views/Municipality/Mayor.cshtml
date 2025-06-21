@@ -1,0 +1,73 @@
+﻿@model Nadasdladany.Models.Representative
+@{
+    ViewData["Title"] = Model?.Name ?? "Polgármester"; // Handle if model is unexpectedly null
+    var greetingTitle = "Polgármesteri Köszöntő";
+    var roleDisplay = Model?.CustomTitleOverride ?? Model?.Role.ToString() ?? "Polgármester";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@greetingTitle</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            @if (Model != null)
+            {
+                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.1s;">
+                    <div class="row g-0">
+                        <div class="col-md-4 text-center p-3 d-flex flex-column align-items-center justify-content-center" style="background-color: var(--bs-light-bg-subtle);">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Url.Content(Model.ImageUrl)" class="img-fluid rounded-circle shadow-sm mb-3" alt="@Model.Name" style="max-width: 200px; height:200px; object-fit:cover; border: 5px solid var(--bs-primary);">
+                            }
+                            else
+                            {
+                                <img src="~/images/placeholder/avatar-placeholder.png" class="img-fluid rounded-circle shadow-sm mb-3" alt="Avatar placeholder" style="max-width: 200px;  height:200px; object-fit:cover; border: 5px solid var(--bs-gray-400);">
+                            }
+                            <h4 class="mb-1">@Model.Name</h4>
+                            <p class="text-muted">@roleDisplay</p>
+                            <hr class="w-75">
+                            <div class="small">
+                                @if (!string.IsNullOrEmpty(Model.ReceptionHoursInfo))
+                                {
+                                    <p class="mb-1"><strong><i class="bi bi-calendar-week me-1"></i>Fogadóóra:</strong> @Model.ReceptionHoursInfo</p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Email))
+                                {
+                                    <p class="mb-1"><strong><i class="bi bi-envelope-fill me-1"></i>E-mail:</strong> <a href="mailto:@Model.Email">@Model.Email</a></p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                                {
+                                    <p class="mb-0"><strong><i class="bi bi-telephone-fill me-1"></i>Telefon:</strong> @Model.PhoneNumber</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h3 class="card-title text-primary mb-3">Tisztelt Nádasdladányiak és Kedves Látogatók!</h3>
+                                @if (!string.IsNullOrEmpty(Model.Biography))
+                                {
+                                    @Html.Raw(Model.Biography)
+                                }
+                                else
+                                {
+                                    <p><em>A polgármester bemutatkozása feltöltés alatt.</em></p>
+                                    <!-- Default welcome message if biography is empty -->
+                                    <p>Engedjék meg, hogy Nádasdladány község polgármestereként tisztelettel és szeretettel köszöntsem Önöket településünk hivatalos honlapján.</p>
+                                    <p>Célunk, hogy ezen a felületen keresztül átfogó képet adjunk településünk mindennapjairól, működéséről, valamint lehetőséget biztosítsunk az egyszerű és gyors tájékozódásra.</p>
+                                    <p>Bízom benne, hogy a honlap hasznos és informatív lesz mindenki számára.</p>
+                                    <p class="mt-4"><em>Üdvözlettel,<br />@Model.Name<br />@roleDisplay</em></p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning text-center">A polgármester adatai jelenleg nem elérhetőek.</div>
+            }
+        </div>
+    </div>
+</div>

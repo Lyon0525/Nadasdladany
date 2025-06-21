@@ -33,7 +33,7 @@ namespace Nadasdladany
 
             app.MapControllerRoute(
                 name: "newsDetail",
-                pattern: "hirek/{slug}", // This will map to NewsController.Details(string slug)
+                pattern: "hirek/{slug}", 
                 defaults: new { controller = "News", action = "Details" });
 
             app.MapControllerRoute(

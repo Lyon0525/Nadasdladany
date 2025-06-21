@@ -1,0 +1,189 @@
+﻿@model IEnumerable<Nadasdladany.Models.Document>
+@{
+    ViewData["Title"] = ViewData["ListTitle"] as string ?? "Dokumentumtár";
+    var listTitle = ViewData["ListTitle"] as string ?? "Események"; // Should be Dokumentumok
+    var categories = ViewBag.Categories as List<Nadasdladany.Models.DocumentCategory> ?? new List<Nadasdladany.Models.DocumentCategory>();
+    var currentCategorySlug = ViewBag.CurrentCategorySlug as string;
+    var currentSearchTerm = ViewBag.CurrentSearchTerm as string;
+
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Keresse meg a szükséges önkormányzati dokumentumokat, rendeleteket, jegyzőkönyveket.</p>
+    </div>
+
+    @if (TempData["DownloadErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["DownloadErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search Form -->
+    <div class="row justify-content-center mb-4 reveal-on-scroll" style="animation-delay:0.1s;">
+        <div class="col-lg-8">
+            <form asp-action="Index" method="get" class="document-search-form">
+                <input type="hidden" name="categorySlug" value="@currentCategorySlug" />
+                <div class="input-group input-group-lg shadow-sm">
+                    <input type="search" name="searchTerm" class="form-control" placeholder="Keresés a dokumentumok között..." value="@currentSearchTerm" aria-label="Dokumentum keresése">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-search me-2"></i>Keresés</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <!-- Sidebar for Categories -->
+        <div class="col-lg-3 mb-4 mb-lg-0 reveal-on-scroll" style="animation-delay:0.2s;">
+            <div class="list-group shadow-sm sticky-top" style="top: 100px;">
+                <h5 class="list-group-item list-group-item-secondary">Kategóriák</h5>
+                <a asp-action="Index" asp-controller="Documents" asp-route-categorySlug="" asp-route-searchTerm="@currentSearchTerm"
+                   class="list-group-item list-group-item-action @(string.IsNullOrEmpty(currentCategorySlug) ? "active" : "")">
+                    Összes Dokumentum
+                </a>
+                @foreach (var category in categories)
+                {
+                    <a asp-action="Index" asp-controller="Documents" asp-route-categorySlug="@category.Slug" asp-route-searchTerm="@currentSearchTerm"
+                       class="list-group-item list-group-item-action @(currentCategorySlug == category.Slug ? "active" : "")">
+                        @category.Name
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Main Document List Content -->
+        <div class="col-lg-9">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">Hiba történt a kérés feldolgozása során.</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="list-group document-list shadow-sm">
+                    @foreach (var doc in Model)
+                    {
+                        <div class="list-group-item list-group-item-action flex-column align-items-start reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(doc) * 0.03)s;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 document-title">
+                                    <i class="bi @(GetIconForFileType(doc.FileType)) me-2 text-primary"></i>
+                                    @doc.Title
+                                </h5>
+                                <small class="text-muted">@doc.UploadedDate.ToString("yyyy. MM. dd.")</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(doc.Description))
+                            {
+                                <p class="mb-1 small document-description text-muted">@doc.Description</p>
+                            }
+                            <div class="mt-2">
+                                <a asp-action="Download" asp-controller="Documents" asp-route-id="@doc.Id" class="btn btn-sm btn-success me-2">
+                                    <i class="bi bi-download me-1"></i> Letöltés (@FormatFileSize(doc.FileSizeInBytes))
+                                </a>
+                                <span class="badge bg-light text-dark border">@doc.DocumentCategory?.Name</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination Controls -->
+                @if (totalPages > 1)
+                {
+                    <nav aria-label="Dokumentumok lapozása" class="mt-4 d-flex justify-content-center">
+                        <ul class="pagination shadow-sm">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-categorySlug="@currentCategorySlug" asp-route-searchTerm="@currentSearchTerm" asp-route-page="1" aria-label="Első">««</a>
+                            </li>
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-categorySlug="@currentCategorySlug" asp-route-searchTerm="@currentSearchTerm" asp-route-page="@(currentPage - 1)" aria-label="Előző">«</a>
+                            </li>
+
+                            @{
+                                int startPage = Math.Max(1, currentPage - 2);
+                                int endPage = Math.Min(totalPages, currentPage + 2);
+                                if (totalPages <= 5) { startPage = 1; endPage = totalPages; }
+                                else if (currentPage <= 3) { endPage = 5; }
+                                else if (currentPage + 2 >= totalPages) { startPage = totalPages - 4; }
+                            }
+                            @if (startPage > 1)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-categorySlug="@currentCategorySlug" asp-route-searchTerm="@currentSearchTerm" asp-route-page="@i">@i</a></li>
+                            }
+                            @if (endPage < totalPages)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-categorySlug="@currentCategorySlug" asp-route-searchTerm="@currentSearchTerm" asp-route-page="@(currentPage + 1)" aria-label="Következő">»</a>
+                            </li>
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-categorySlug="@currentCategorySlug" asp-route-searchTerm="@currentSearchTerm" asp-route-page="@totalPages" aria-label="Utolsó">»»</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info mt-4 text-center shadow-sm">
+                    <i class="bi bi-info-circle-fill me-2"></i>Nincsenek dokumentumok a kiválasztott feltételekkel.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@{
+    // Helper functions for the view
+    string GetIconForFileType(string fileType)
+    {
+        fileType = fileType?.ToUpperInvariant() ?? "";
+        switch (fileType)
+        {
+            case "PDF": return "bi-file-earmark-pdf-fill";
+            case "DOC": case "DOCX": return "bi-file-earmark-word-fill";
+            case "XLS": case "XLSX": return "bi-file-earmark-excel-fill";
+            case "PPT": case "PPTX": return "bi-file-earmark-ppt-fill";
+            case "TXT": return "bi-file-earmark-text-fill";
+            case "ZIP": case "RAR": return "bi-file-earmark-zip-fill";
+            case "JPG": case "JPEG": case "PNG": case "GIF": return "bi-file-earmark-image-fill";
+            default: return "bi-file-earmark-fill"; // Generic file icon
+        }
+    }
+
+    string FormatFileSize(long? bytes)
+    {
+        if (!bytes.HasValue) return "N/A";
+        var b = bytes.Value;
+        if (b < 1024) return $"{b} B";
+        if (b < 1024 * 1024) return $"{(b / 1024.0):F1} KB";
+        if (b < 1024 * 1024 * 1024) return $"{(b / (1024.0 * 1024.0)):F1} MB";
+        return $"{(b / (1024.0 * 1024.0 * 1024.0)):F1} GB";
+    }
+}
+
+<style>
+    .document-list .list-group-item-action:hover,
+    .document-list .list-group-item-action:focus {
+        background-color: #f8f9fa; /* Light hover effect */
+    }
+
+    .document-title {
+        color: var(--bs-primary);
+    }
+</style>

@@ -1,0 +1,191 @@
+﻿@model IEnumerable<Nadasdladany.Models.Event>
+@{
+    ViewData["Title"] = ViewData["ListTitle"] as string ?? "Eseménynaptár";
+    var listTitle = ViewData["ListTitle"] as string ?? "Események";
+    var currentFilter = ViewBag.CurrentFilter as string ?? "upcoming";
+
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    // int pageSize = ViewBag.PageSize; // Not directly used in this pagination UI but good to have
+    // int totalEvents = ViewBag.TotalEvents; // Not directly used in this pagination UI
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Böngésszen községünk aktuális és múltbeli eseményei között.</p>
+    </div>
+
+    <div class="event-filters text-center mb-4 reveal-on-scroll" style="animation-delay: 0.1s;">
+        <div class="btn-group shadow-sm" role="group" aria-label="Esemény szűrők">
+            <a asp-action="Index" asp-route-filter="upcoming" class="btn @(currentFilter == "upcoming" ? "btn-primary active-filter" : "btn-outline-primary")">
+                <i class="bi bi-calendar-check-fill me-1"></i>Közelgő
+            </a>
+            <a asp-action="Index" asp-route-filter="past" class="btn @(currentFilter == "past" ? "btn-primary active-filter" : "btn-outline-primary")">
+                <i class="bi bi-calendar-x-fill me-1"></i>Korábbi
+            </a>
+            <a asp-action="Index" asp-route-filter="all" class="btn @(currentFilter == "all" ? "btn-primary active-filter" : "btn-outline-primary")">
+                <i class="bi bi-calendar3-fill me-1"></i>Összes
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning text-center">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var ev in Model)
+            {
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(ev) * 0.05)s;">
+                    <div class="card event-card h-100 shadow-sm w-100">
+                        <div class="card-header event-card-header text-white @(ev.StartDate >= DateTime.UtcNow.Date || (ev.EndDate.HasValue && ev.EndDate.Value >= DateTime.UtcNow.Date) ? "bg-primary" : "bg-secondary")">
+                            <div class="event-date fw-bold">
+                                <i class="bi bi-calendar-week me-2"></i>
+                                @ev.StartDate.ToString("yyyy. MMMM dd.", new System.Globalization.CultureInfo("hu-HU"))
+                                @if (!ev.IsAllDay && ev.StartDate.TimeOfDay != TimeSpan.Zero)
+                                {
+                                    <span> - @ev.StartDate.ToString("HH:mm")</span>
+                                }
+                            </div>
+                            @if (ev.EndDate.HasValue && ev.EndDate.Value.Date > ev.StartDate.Date)
+                            {
+                                <div class="event-end-date small"><i class="bi bi-arrow-right-short"></i> @ev.EndDate.Value.ToString("MMMM dd.", new System.Globalization.CultureInfo("hu-HU"))</div>
+                            }
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">
+                                <a asp-controller="Events" asp-action="Details" asp-route-slug="@ev.Slug" class="text-decoration-none stretched-link event-title-link">
+                                    @ev.Title
+                                </a>
+                            </h5>
+                            @if (!string.IsNullOrEmpty(ev.Location))
+                            {
+                                <p class="card-text small text-muted mb-2"><i class="bi bi-geo-alt-fill me-1"></i>@ev.Location</p>
+                            }
+                            @if (!string.IsNullOrEmpty(ev.Description))
+                            {
+                                <div class="event-description-truncate small text-muted mb-3 flex-grow-1">
+                                    @Html.Raw(System.Text.RegularExpressions.Regex.Replace(ev.Description, "<.*?>", String.Empty).Substring(0, Math.Min(ev.Description.Length, 120)))
+                                    @if (ev.Description.Length > 120)
+                                    {<span>...</span>}
+                                </div>
+                            }
+                            <!-- The stretched-link on the title makes the whole card clickable to the details page -->
+                        </div>
+                        @if (!string.IsNullOrEmpty(ev.Organizer))
+                        {
+                            <div class="card-footer text-muted small bg-light-subtle">
+                                <i class="bi bi-person-gear me-1"></i>Szervező: @ev.Organizer
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination Controls -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Események lapozása" class="mt-5 d-flex justify-content-center">
+                <ul class="pagination shadow-sm">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="1" aria-label="Első">
+                            <span aria-hidden="true">««</span>
+                        </a>
+                    </li>
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@(currentPage - 1)" aria-label="Előző">
+                            <span aria-hidden="true">«</span>
+                        </a>
+                    </li>
+
+                    @* Dynamic Page Number Links *@
+                    @{
+                        int startPage = Math.Max(1, currentPage - 2);
+                        int endPage = Math.Min(totalPages, currentPage + 2);
+                        if (totalPages <= 5) { startPage = 1; endPage = totalPages; }
+                        else if (currentPage <= 3) { endPage = 5; }
+                        else if (currentPage + 2 >= totalPages) { startPage = totalPages - 4; }
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                    
+                    @if (endPage < totalPages)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@(currentPage + 1)" aria-label="Következő">
+                            <span aria-hidden="true">»</span>
+                        </a>
+                    </li>
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@totalPages" aria-label="Utolsó">
+                            <span aria-hidden="true">»»</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info mt-4 text-center shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i>Jelenleg nincsenek események a kiválasztott szűrés alapján.
+        </div>
+    }
+</div>
+
+<style>
+    .event-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid #e0e0e0;
+    }
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+    }
+    .event-card .card-header {
+        font-size: 0.95em;
+    }
+    .event-card .event-title-link {
+        color: var(--bs-primary); /* Or your main link color */
+    }
+    .event-card .event-title-link:hover {
+        color: var(--bs-dark); /* Or a darker shade of your link color */
+        text-decoration: underline;
+    }
+    .event-description-truncate {
+        min-height: 60px; /* Approx 3 lines with line-height */
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* Number of lines to show before truncating */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .active-filter {
+        /* Optional: Add a bit more visual distinction for the active filter button if needed */
+        font-weight: bold;
+    }
+    .page-header h1 {
+        color: var(--bs-primary); /* Example color */
+    }
+</style>

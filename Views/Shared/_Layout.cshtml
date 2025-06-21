@@ -129,12 +129,77 @@
         </div>
     </div>
 
-    <footer class="footer mt-auto py-3 bg-light border-top">
-        <div class="container text-center">
-            <span class="text-muted">© @DateTime.Now.Year - @(Model?.SiteName ?? "Nádasdladány Község Honlapja") - Minden jog fenntartva.</span>
-            @*<p class="mb-0">
-                <a asp-controller="Home" asp-action="Privacy">Adatvédelmi Nyilatkozat</a>
-            </p>*@
+    <footer class="footer-modern text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row gy-4">
+
+                <!-- Column 1: Brand and About -->
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0 footer-col">
+                    <div class="footer-brand d-flex align-items-center justify-content-center justify-content-md-start mb-3">
+                        <img src="~/images/logo-placeholder-footer.png" alt="Nádasdladány Címer" class="footer-logo me-2">
+                        <h5 class="fw-bold mb-0 site-title-footer">Nádasdladány</h5>
+                    </div>
+                    <p class="small text-muted-footer">
+                        Nádasdladány község hivatalos honlapja. Ismerje meg településünk életét, szolgáltatásait és közösségét.
+                        Építjük a jövőt, őrizzük értékeinket. (Placeholder tagline)
+                    </p>
+                    <div class="social-icons-footer mt-3 text-center text-md-start">
+                        <a href="YOUR_FACEBOOK_LINK_HERE" target="_blank" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="YOUR_INSTAGRAM_LINK_HERE" target="_blank" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="YOUR_YOUTUBE_LINK_HERE" target="_blank" class="social-icon" title="YouTube"><i class="bi bi-youtube"></i></a>
+                        @* <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a> *@
+                    </div>
+                </div>
+
+                <!-- Column 2: Quick Links -->
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0 footer-col">
+                    <h6 class="text-uppercase fw-bold mb-4 footer-heading">Hasznos Linkek</h6>
+                    <ul class="list-unstyled mb-0 footer-links">
+                        <li><a asp-controller="Home" asp-action="Index" class="footer-link">Kezdőlap</a></li>
+                        <li><a asp-controller="News" asp-action="Index" class="footer-link">Hírek</a></li>
+                        <li><a asp-controller="Events" asp-action="Index" class="footer-link">Események</a></li>
+                        <li><a asp-controller="Documents" asp-action="Index" class="footer-link">Dokumentumtár</a></li>
+                        <li><a asp-controller="Institutions" asp-action="Index" class="footer-link">Intézmények</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Municipality Links -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0 footer-col">
+                    <h6 class="text-uppercase fw-bold mb-4 footer-heading">Önkormányzat</h6>
+                    <ul class="list-unstyled mb-0 footer-links">
+                        <li><a asp-controller="Municipality" asp-action="Office" class="footer-link">Polgármesteri Hivatal</a></li>
+                        <li><a asp-controller="Municipality" asp-action="Mayor" class="footer-link">Polgármester</a></li>
+                        <li><a asp-controller="Municipality" asp-action="Representatives" class="footer-link">Képviselő-testület</a></li>
+                        <li><a href="https://www.magyarorszag.hu" target="_blank" class="footer-link">E-ügyintézés</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Contact Information -->
+                <div class="col-lg-3 col-md-6 footer-col">
+                    <h6 class="text-uppercase fw-bold mb-4 footer-heading">Kapcsolat</h6>
+                    <ul class="list-unstyled mb-0 footer-contact-info">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i>8145 Nádasdladány, Fő utca 1. (Placeholder)</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i><a href="tel:+3622123456" class="footer-link">+36 (22) 123-456</a> (P)</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i><a href="mailto:info@nadasdladany.hu" class="footer-link">info@nadasdladany.hu</a> (P)</li>
+                        <li><i class="bi bi-clock-fill me-2"></i>H-P: 8:00-16:00 (P)</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="footer-bottom py-3 mt-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <span class="small">© @DateTime.Now.Year Nádasdladány Község Önkormányzata. Minden jog fenntartva.</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end footer-legal-links">
+                        <a asp-controller="Home" asp-action="Privacy" class="footer-link small me-3">Adatvédelmi Nyilatkozat</a>
+                        <a asp-controller="Home" asp-action="AccessibilityStatement" class="footer-link small">Akadálymentesítés</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 

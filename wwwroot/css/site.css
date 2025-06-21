@@ -249,3 +249,130 @@ body {
 .article-featured-image {
     
 }
+
+/* wwwroot/css/site.css */
+
+/* ... (your existing :root variables and other styles) ... */
+
+/* --- Modern Footer --- */
+.footer-modern {
+    background-color: var(--light-bg); /* Using your dark theme's slightly lighter bg */
+    /* Or a very dark color: background-color: #0a0c12; */
+    border-top: 3px solid var(--primary-color); /* Accent line */
+    color: var(--text-muted-color); /* Muted text for general footer text */
+}
+
+.footer-col {
+    /* For alignment if needed, handled by gy-4 on row mostly */
+}
+
+.footer-logo {
+    height: 45px; /* Adjust size as needed */
+    opacity: 0.9;
+}
+
+.site-title-footer {
+    font-family: var(--font-primary); /* Your techy font for the site title */
+    color: #fff; /* Brighter color for title */
+    font-size: 1.5rem;
+}
+
+.text-muted-footer {
+    color: var(--text-muted-color) !important; /* More subtle than general text */
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.footer-heading {
+    color: #ffffff; /* White or a very light gray */
+    letter-spacing: 0.5px;
+    font-family: var(--font-primary);
+    font-size: 1rem; /* Slightly smaller than page headings */
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: inline-block; /* To make border only as wide as text */
+}
+
+.footer-links li {
+    margin-bottom: 0.6rem;
+}
+
+.footer-link {
+    color: var(--text-muted-color);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out, padding-left 0.2s ease-in-out;
+    font-size: 0.9rem;
+}
+
+    .footer-link:hover {
+        color: var(--primary-accent-color);
+        padding-left: 5px; /* Slight indent on hover */
+        text-decoration: underline;
+    }
+
+.footer-contact-info li {
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center; /* Align icon with text */
+    font-size: 0.9rem;
+}
+
+.footer-contact-info i {
+    color: var(--primary-accent-color);
+    font-size: 1.1rem; /* Make icons a bit larger */
+    width: 25px; /* Ensure alignment */
+}
+
+.social-icons-footer .social-icon {
+    color: var(--text-muted-color);
+    font-size: 1.6rem; /* Larger social icons */
+    margin-right: 15px;
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+    .social-icons-footer .social-icon:hover {
+        color: var(--primary-accent-color);
+        transform: translateY(-2px);
+    }
+
+    .social-icons-footer .social-icon:last-child {
+        margin-right: 0;
+    }
+
+
+.footer-bottom {
+    background-color: rgba(0,0,0,0.2); /* Slightly darker strip for copyright */
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+    .footer-bottom span, .footer-bottom .footer-link {
+        color: #9aa0a6; /* Slightly lighter muted for better readability */
+    }
+
+.footer-legal-links a:hover {
+    color: #fff;
+}
+
+/* Adjustments for smaller screens if gy-4 isn't enough or specific alignments are needed */
+@media (max-width: 767.98px) { /* md breakpoint */
+    .footer-modern .text-md-start {
+        text-align: center !important;
+    }
+
+    .footer-modern .text-md-end {
+        text-align: center !important;
+        margin-top: 1rem;
+    }
+
+    .footer-brand.d-flex {
+        justify-content: center !important; /* Center logo and title on mobile */
+    }
+
+    .footer-heading {
+        margin-top: 1.5rem; /* More space between sections on mobile stack */
+    }
+
+    .footer-col:first-child .footer-heading {
+        margin-top: 0;
+    }
+}

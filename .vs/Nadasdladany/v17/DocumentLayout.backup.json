@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|c:\\users\\gyula\\source\\repos\\nadasdladany\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|c:\\users\\gyula\\source\\repos\\nadasdladany\\views\\institutions\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|solutionrelative:views\\institutions\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|c:\\users\\gyula\\source\\repos\\nadasdladany\\views\\institutions\\institutiondetail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{0FBFA73F-CAF8-420C-A61B-C1031854525D}|Nadasdladany.csproj|solutionrelative:views\\institutions\\institutiondetail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,15 +30,28 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "InstitutionDetail.cshtml",
+              "DocumentMoniker": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\Views\\Institutions\\InstitutionDetail.cshtml",
+              "RelativeDocumentMoniker": "Views\\Institutions\\InstitutionDetail.cshtml",
+              "ToolTip": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\Views\\Institutions\\InstitutionDetail.cshtml",
+              "RelativeToolTip": "Views\\Institutions\\InstitutionDetail.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGAAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-21T16:57:47.982Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "site.css",
-              "DocumentMoniker": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\wwwroot\\css\\site.css",
-              "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
-              "ToolTip": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\wwwroot\\css\\site.css",
-              "RelativeToolTip": "wwwroot\\css\\site.css",
-              "ViewState": "AgIAAN4AAAAAAAAAAAAQwPwAAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-06-15T06:43:55.051Z",
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\Views\\Institutions\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Institutions\\Index.cshtml",
+              "ToolTip": "C:\\Users\\gyula\\source\\repos\\Nadasdladany\\Views\\Institutions\\Index.cshtml",
+              "RelativeToolTip": "Views\\Institutions\\Index.cshtml",
+              "ViewState": "AgIAAD0AAAAAAAAAAAAswHYAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-21T16:57:33.701Z",
               "EditorCaption": ""
             }
           ]

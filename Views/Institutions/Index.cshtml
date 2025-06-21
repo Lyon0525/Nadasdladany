@@ -1,0 +1,119 @@
+﻿@model IEnumerable<Nadasdladany.Models.Institution>
+@{
+    ViewData["Title"] = "Intézményeink";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-5 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Ismerje meg Nádasdladány község alapvető intézményeit és szolgáltatásait.</p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Bezárás"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var institution in Model)
+            {
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(institution) * 0.05)s;">
+                    <div class="card institution-card h-100 shadow-sm w-100">
+                        @if (!string.IsNullOrEmpty(institution.ImageUrl))
+                        {
+                            <a asp-action="Details" asp-controller="Institutions" asp-route-slug="@institution.Slug">
+                                <img src="@Url.Content(institution.ImageUrl)" class="card-img-top institution-card-img" alt="@institution.Name">
+                            </a>
+                        }
+                        else if (!string.IsNullOrEmpty(institution.IconCssClass))
+                        {
+                            <a asp-action="Details" asp-controller="Institutions" asp-route-slug="@institution.Slug" class="d-block text-center">
+                                <div class="card-img-top institution-card-icon-placeholder d-flex align-items-center justify-content-center">
+                                    <i class="@institution.IconCssClass" style="font-size: 4rem; color: var(--bs-secondary);"></i>
+                                </div>
+                            </a>
+                        }
+                        <div class="card-body d-flex flex-column">
+                            <h4 class="card-title text-primary">
+                                @* <i class="@institution.IconCssClass me-2"></i> Commented out if icon is already in image placeholder *@
+                                <!-- THIS IS THE PRIMARY LINK NOW -->
+                                <a asp-action="Details" asp-controller="Institutions" asp-route-slug="@institution.Slug" class="text-decoration-none stretched-link">
+                                    @institution.Name
+                                </a>
+                            </h4>
+                            @if (!string.IsNullOrEmpty(institution.Description))
+                            {
+                                <p class="card-text small text-muted flex-grow-1 institution-description-truncate">
+                                    @Html.Raw(System.Text.RegularExpressions.Regex.Replace(institution.Description, "<.*?>", String.Empty).Substring(0, Math.Min(institution.Description.Length, 100)))
+                                    @if (institution.Description.Length > 100)
+                                    {
+                                        <span>...</span>
+                                    }
+                                </p>
+                            }
+                            <div class="mt-auto pt-2">
+                                @if (!string.IsNullOrEmpty(institution.Address))
+                                {
+                                    <p class="card-text mb-1"><small><i class="bi bi-geo-alt-fill me-1"></i>@institution.Address</small></p>
+                                }
+                                @if (!string.IsNullOrEmpty(institution.PhoneNumber))
+                                {
+                                    <p class="card-text mb-1"><small><i class="bi bi-telephone-fill me-1"></i>@institution.PhoneNumber</small></p>
+                                }
+                                <!-- The Részletek button can be removed as the title and image are links -->
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(institution.WebsiteUrl))
+                        {
+                            <div class="card-footer bg-light-subtle text-center">
+                                <a href="@institution.WebsiteUrl" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener noreferrer">Weboldal <i class="bi bi-box-arrow-up-right"></i></a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">Az intézmények listája jelenleg nem elérhető.</div>
+    }
+</div>
+
+<style>
+    .institution-card-img {
+        height: 180px; /* Adjusted */
+        object-fit: cover;
+    }
+
+    .institution-card-icon-placeholder {
+        height: 180px; /* Adjusted */
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .institution-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+        .institution-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+        }
+
+    .institution-description-truncate { /* Truncation for card description */
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* Number of lines */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.85rem;
+        min-height: calc(0.85rem * 1.4 * 3); /* Approx height for 3 lines */
+    }
+</style>

@@ -1,0 +1,127 @@
+﻿@model Nadasdladany.ViewModels.OfficePageViewModel
+@{
+    ViewData["Title"] = Model.OfficeDetails?.OfficeName ?? "Polgármesteri Hivatal";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@Model.OfficeDetails?.OfficeName</h1>
+        <p class="lead text-muted-color">Információk a Nádasdladányi Polgármesteri Hivatal működéséről, elérhetőségeiről és ügyfélfogadási rendjéről.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            @if (Model.OfficeDetails != null)
+            {
+                @if (!string.IsNullOrEmpty(Model.OfficeDetails.AboutOffice))
+                {
+                    <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.1s;">
+                        <div class="card-body">
+                            <h3 class="card-title text-primary"><i class="bi bi-building me-2"></i>A Hivatalról</h3>
+                            @Html.Raw(Model.OfficeDetails.AboutOffice)
+                        </div>
+                    </div>
+                }
+
+                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.2s;">
+                    <div class="card-body">
+                        <h3 class="card-title text-primary"><i class="bi bi-telephone-fill me-2"></i>Elérhetőségek</h3>
+                        <ul class="list-unstyled">
+                            @if (!string.IsNullOrEmpty(Model.OfficeDetails.Address))
+                            {
+                                <li><strong>Cím:</strong> @Model.OfficeDetails.Address</li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.OfficeDetails.PhoneNumber))
+                            {
+                                <li><strong>Telefonszám:</strong> @Model.OfficeDetails.PhoneNumber</li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.OfficeDetails.Email))
+                            {
+                                <li><strong>E-mail:</strong> <a href="mailto:@Model.OfficeDetails.Email">@Model.OfficeDetails.Email</a></li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.OfficeDetails.WebsiteUrl))
+                            {
+                                <li><strong>Honlap:</strong> <a href="@Model.OfficeDetails.WebsiteUrl" target="_blank">@Model.OfficeDetails.WebsiteUrl</a></li>
+                            }
+                            else
+                            {
+                                <li><strong>Honlap:</strong> <a asp-controller="Home" asp-action="Index">@Context.Request.Host</a></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.OfficeDetails.GoogleMapsEmbedUrl))
+                {
+                    <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.25s;">
+                        <div class="card-body p-0" style="line-height: 0;">
+                            <!-- p-0 and line-height to remove iframe spacing -->
+                            @Html.Raw(Model.OfficeDetails.GoogleMapsEmbedUrl)
+                        </div>
+                    </div>
+                }
+            }
+
+            @if (Model.OfficeHours != null && Model.OfficeHours.Any())
+            {
+                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.3s;">
+                    <div class="card-body">
+                        <h3 class="card-title text-primary"><i class="bi bi-clock-history me-2"></i>Ügyfélfogadási Rend</h3>
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nap</th>
+                                    <th>Időpont</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in Model.OfficeHours.OrderBy(oh => oh.DisplayOrder))
+                                {
+                                    <tr>
+                                        <td>@entry.DayOfWeek.ToString("G", new System.Globalization.CultureInfo("hu-HU"))</td>
+                                        <td>@entry.TimeDescription</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            @if (Model.KeyStaffMembers != null && Model.KeyStaffMembers.Any())
+            {
+                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.4s;">
+                    <div class="card-body">
+                        <h3 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Fontosabb Munkatársak</h3>
+                        <ul class="list-unstyled">
+                            @foreach (var staff in Model.KeyStaffMembers)
+                            {
+                                <li class="mb-2">
+                                    <strong>@staff.Name</strong> - @(staff.CustomTitleOverride ?? staff.Role.ToString())
+                                    @if (!string.IsNullOrEmpty(staff.Email))
+                                    {
+                                        <br />
+                                        <small><i class="bi bi-envelope-fill me-1"></i><a href="mailto:@staff.Email">@staff.Email</a></small>
+         }
+                                    @if (!string.IsNullOrEmpty(staff.PhoneNumber))
+                                    {
+                                        <small class="ms-2"><i class="bi bi-telephone-fill me-1"></i>@staff.PhoneNumber</small>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<style>
+    /* Ensure iframe from Google Maps is responsive */
+    .card-body iframe {
+        width: 100% !important; /* Important to override potential inline styles */
+        min-height: 300px; /* Adjust as needed */
+        height: auto;
+        border: 0;
+    }
+</style>
