@@ -20,6 +20,8 @@
 build/
 TestResults/
 publish/
+.vs/
+/.vs/
 
 # Rider
 .idea/
