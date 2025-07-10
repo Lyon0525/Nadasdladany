@@ -49,12 +49,13 @@ namespace Nadasdladany.Controllers
 
         public IActionResult Privacy()
         {
-            return View();
+            ViewData["Title"] = "Adatvédelmi és Adatkezelési Nyilatkozat"; // Privacy and Data Management Policy
+            return View(); // Will look for Views/Home/Privacy.cshtml
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult AccessibilityStatement()
         {
+            ViewData["Title"] = "Akadálymentesítési Nyilatkozat";
             return View();
         }
     }

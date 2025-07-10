@@ -1,0 +1,45 @@
+﻿@model Nadasdladany.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Bejelentkezés - Adminisztráció";
+}
+
+<div class="container content-padding">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="mb-0">Adminisztrátori Bejelentkezés</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                            <label asp-for="Email"></label>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Password" class="form-control" placeholder="Password" />
+                            <label asp-for="Password"></label>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" asp-for="RememberMe" />
+                            <label class="form-check-label" asp-for="RememberMe"></label>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-lg btn-primary">Bejelentkezés</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @* Link to request password reset or contact admin if needed later *@
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

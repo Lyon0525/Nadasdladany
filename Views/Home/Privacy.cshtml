@@ -1,0 +1,150 @@
+﻿@{
+    ViewData["Title"] = "Adatvédelmi és Adatkezelési Nyilatkozat";
+    var lastUpdatedDate = new DateTime(2024, 6, 1); // !!! UPDATE THIS TO THE ACTUAL LAST UPDATED DATE !!!
+    var municipalityName = "Nádasdladány Község Önkormányzata"; // Can be from config/ViewData
+    var officialAddress = "8145 Nádasdladány, Fő utca 1. (Placeholder)";
+    var dpoEmail = "adatvedelem@nadasdladany.hu (Placeholder)"; // Data Protection Officer Email
+    var dpoPhone = "+36 (xx) xxx-xxxx (Placeholder)";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Fontos információk az Ön személyes adatainak kezeléséről honlapunk használata során.</p>
+    </div>
+
+    <div class="card shadow-sm reveal-on-scroll" style="animation-delay: 0.1s;">
+        <div class="card-body p-4 p-md-5">
+            <p class="text-muted fst-italic">Utolsó frissítés: @lastUpdatedDate.ToString("yyyy. MMMM dd.")</p>
+            <hr>
+
+            <section id="bevezeto" class="mb-4">
+                <h2 class="section-title-secondary">1. Bevezető és Adatkezelő</h2>
+                <p>@municipalityName (Székhely: @officialAddress, a továbbiakban: "Adatkezelő" vagy "Önkormányzat") elkötelezett az Ön személyes adatainak védelme mellett. Ez a nyilatkozat tájékoztatást nyújt arról, hogy milyen személyes adatokat gyűjtünk, hogyan használjuk fel, osztjuk meg és védjük azokat a [www.nadasdladany.hu] weboldal (továbbiakban: "Honlap") használata során.</p>
+                <p>Kérjük, figyelmesen olvassa el ezt a nyilatkozatot. A Honlap használatával Ön elfogadja az itt leírt adatkezelési gyakorlatot.</p>
+            </section>
+
+            <section id="adatok-kore" class="mb-4">
+                <h2 class="section-title-secondary">2. A Kezelt Személyes Adatok Köre</h2>
+                <p>Automatikusan gyűjtött adatok (Technikai adatok):</p>
+                <ul>
+                    <li><strong>Sütik (Cookies):</strong> A Honlap sütiket használ a felhasználói élmény javítása és anonim statisztikai adatok gyűjtése érdekében. A sütikről részletesebben a "Sütikezelési Tájékoztató" részben olvashat. (Placeholder: Készítsen külön sütikezelési tájékoztatót, vagy integrálja ide.)</li>
+                    <li><strong>Szerver naplófájlok:</strong> A webszerver automatikusan naplózza a látogatások egyes technikai adatait (pl. IP-cím, böngésző típusa, operációs rendszer, látogatás ideje, megtekintett oldalak). Ezeket az adatokat elsősorban technikai problémák elhárítására, a Honlap biztonságának fenntartására és anonim látogatottsági statisztikák készítésére használjuk.</li>
+                </ul>
+                <p>Önkéntesen megadott adatok:</p>
+                <ul>
+                    <li><strong>Kapcsolatfelvételi űrlap:</strong> Amennyiben Ön a Honlapon keresztül üzenetet küld nekünk, az Ön által megadott adatokat (név, e-mail cím, tárgy, üzenet) kezeljük a válaszadás és ügyintézés érdekében. (Lásd még: <a asp-controller="Contact" asp-action="Index">Kapcsolat</a> oldal)</li>
+                    <li><strong>E-ügyintézés:</strong> Az E-ügyintézési funkciók használata során átirányításra kerülhet központi kormányzati portálokra (pl. magyarorszag.hu), amelyek saját adatvédelmi szabályzattal rendelkeznek. Az Önkormányzat ezen külső oldalak adatkezeléséért nem vállal felelősséget.</li>
+                    <li><em>(Placeholder: Adjon hozzá minden egyéb helyzetet, ahol a felhasználó személyes adatokat adhat meg, pl. hírlevél feliratkozás, eseményregisztráció stb.)</em></li>
+                </ul>
+            </section>
+
+            <section id="adatkezeles-celja" class="mb-4">
+                <h2 class="section-title-secondary">3. Az Adatkezelés Célja és Jogalapja</h2>
+                <p>Személyes adatait az alábbi célokból és jogalapokon kezeljük:</p>
+                <ul>
+                    <li><strong>A Honlap működtetése és fejlesztése:</strong> Jogalap: jogos érdek (a Honlap megfelelő működésének biztosítása, felhasználói élmény javítása). Ide tartoznak a technikai adatok és sütik kezelése.</li>
+                    <li><strong>Kapcsolatfelvétel és ügyintézés:</strong> Az Ön által küldött megkeresések megválaszolása. Jogalap: az Ön hozzájárulása (az üzenet elküldésével) vagy szerződés teljesítése/előkészítése, ha az üzenet erre irányul.</li>
+                    <li><strong>Jogi kötelezettségek teljesítése:</strong> Amennyiben jogszabály írja elő.</li>
+                    <li><em>(Placeholder: Adja meg az összes adatkezelési célt és a hozzájuk tartozó jogalapot – pl. GDPR 6. cikk (1) bekezdés a), b), c), f) pontok.)</em></li>
+                </ul>
+            </section>
+
+            <section id="adatkezeles-idotartama" class="mb-4">
+                <h2 class="section-title-secondary">4. Az Adatkezelés Időtartama</h2>
+                <p>Személyes adatait csak a szükséges ideig őrizzük meg, az adatkezelés céljának megfelelően, illetve ameddig jogszabály azt előírja.</p>
+                <ul>
+                    <li>A kapcsolati űrlapon beküldött adatokat az ügy lezárásáig, vagy az Ön törlési kérelméig kezeljük, de legfeljebb [X évig (Placeholder: Határozzon meg egy időtartamot, pl. 2 évig)].</li>
+                    <li>A szerver naplófájlokat [Y napig/hónapig (Placeholder: pl. 30 napig)] őrizzük meg.</li>
+                    <li>A sütik érvényességi idejéről a "Sütikezelési Tájékoztatóban" talál részletes információt.</li>
+                </ul>
+            </section>
+
+            <section id="adattovabbitas" class="mb-4">
+                <h2 class="section-title-secondary">5. Adattovábbítás és Adatfeldolgozók</h2>
+                <p>Személyes adatait bizalmasan kezeljük, és harmadik fél részére csak az Ön hozzájárulásával, vagy ha azt jogszabály kötelezővé teszi, továbbítjuk.</p>
+                <p>A Honlap működtetéséhez adatfeldolgozókat vehetünk igénybe (pl. tárhelyszolgáltató, webelemző szoftverek szolgáltatója). Az adatfeldolgozók kizárólag az Önkormányzat utasításai alapján, a szükséges mértékben és ideig kezelhetik az adatokat, és kötelesek biztosítani azok biztonságát.</p>
+                <p><em>(Placeholder: Nevesítse az adatfeldolgozókat, ha vannak, és a továbbítás célját, pl. Google Analytics, tárhelyszolgáltató.)</em></p>
+            </section>
+
+            <section id="felhasznaloi-jogok" class="mb-4">
+                <h2 class="section-title-secondary">6. Az Ön Jogai</h2>
+                <p>Az adatkezeléssel kapcsolatban Önt az alábbi jogok illetik meg:</p>
+                <ul>
+                    <li><strong>Tájékoztatáshoz való jog:</strong> Joga van tájékoztatást kérni személyes adatai kezeléséről.</li>
+                    <li><strong>Hozzáféréshez való jog:</strong> Joga van hozzáférni az általunk kezelt személyes adataihoz.</li>
+                    <li><strong>Helyesbítéshez való jog:</strong> Kérheti pontatlan személyes adatainak helyesbítését.</li>
+                    <li><strong>Törléshez való jog ("elfeledtetéshez való jog"):</strong> Bizonyos esetekben kérheti személyes adatainak törlését.</li>
+                    <li><strong>Adatkezelés korlátozásához való jog:</strong> Bizonyos esetekben kérheti személyes adatai kezelésének korlátozását.</li>
+                    <li><strong>Adathordozhatósághoz való jog:</strong> Bizonyos feltételek mellett joga van megkapni az Önre vonatkozó, Ön által rendelkezésünkre bocsátott személyes adatokat tagolt, széles körben használt, géppel olvasható formátumban.</li>
+                    <li><strong>Tiltakozáshoz való jog:</strong> Tiltakozhat személyes adatainak kezelése ellen, amennyiben az adatkezelés jogos érdeken alapul.</li>
+                    <li><strong>Hozzájárulás visszavonásához való jog:</strong> Amennyiben az adatkezelés az Ön hozzájárulásán alapul, azt bármikor visszavonhatja.</li>
+                    <li><strong>Panasztételhez való jog:</strong> Ha úgy véli, hogy adatkezelésünk sérti a jogszabályokat, panaszt tehet a Nemzeti Adatvédelmi és Információszabadság Hatóságnál (NAIH).</li>
+                </ul>
+                <p>Kérelmeit az alábbi elérhetőségeken nyújthatja be: <a href="mailto:@dpoEmail">@dpoEmail</a> vagy postai úton a fent megadott székhelycímre.</p>
+            </section>
+
+            <section id="adatbiztonsag" class="mb-4">
+                <h2 class="section-title-secondary">7. Adatbiztonság</h2>
+                <p>Megfelelő technikai és szervezési intézkedéseket teszünk személyes adatai védelme érdekében a véletlen vagy jogellenes megsemmisítés, elvesztés, megváltoztatás, jogosulatlan közlés vagy hozzáférés ellen.</p>
+                <p><em>(Placeholder: Röviden említsen meg néhány intézkedést, pl. SSL titkosítás, rendszeres frissítések, hozzáférés-szabályozás.)</em></p>
+            </section>
+            
+            <section id="sutik" class="mb-4">
+                <h2 class="section-title-secondary">8. Sütikezelési Tájékoztató (Cookie Policy)</h2>
+                <p>A Honlap "sütiket" (cookies) használ a jobb felhasználói élmény és a weboldal funkcionalitásának biztosítása érdekében, valamint anonimizált látogatottsági adatok gyűjtésére.</p>
+                <p><strong>Mik azok a sütik?</strong> A sütik kis szöveges fájlok, amelyeket a böngészője tárol az Ön eszközén (számítógép, mobiltelefon). Nem tartalmaznak személyes adatokat, amelyek alapján Ön közvetlenül azonosítható lenne, kivéve, ha Ön ilyen adatokat kifejezetten megadott a honlapon.</p>
+                <p><strong>Milyen sütiket használunk?</strong></p>
+                <ul>
+                    <li><strong>Munkamenet (Session) sütik:</strong> Ezek ideiglenesek, és a böngésző bezárásakor törlődnek. Segítik a honlap alapvető funkcióinak működését.</li>
+                    <li><strong>Maradandó (Persistent) sütik:</strong> Ezek hosszabb ideig az Ön eszközén maradnak, vagy amíg Ön manuálisan nem törli őket. Segítenek felismerni Önt visszatérő látogatóként (de nem személy szerint).</li>
+                    <li><strong>Teljesítményt biztosító sütik (pl. Google Analytics):</strong> Anonim adatokat gyűjtenek arról, hogy a látogatók hogyan használják a honlapot (pl. mely oldalakat látogatják leggyakrabban). Ezek segítenek a honlap fejlesztésében. <em>(Placeholder: Ha Google Analyticset használ, itt kell részletezni és linkelni a Google adatvédelmi irányelveit.)</em></li>
+                    <li><em>(Placeholder: Adjon hozzá más típusú sütiket, ha használ ilyet, pl. funkcionális sütik preferenciák megjegyzésére.)</em></li>
+                </ul>
+                <p><strong>Sütik kezelése és törlése:</strong> Böngészője beállításaiban lehetősége van letiltani vagy engedélyezni a sütik használatát, valamint törölni a már meglévő sütiket. Felhívjuk figyelmét, hogy egyes sütik letiltása befolyásolhatja a Honlap egyes funkcióinak működését.</p>
+                <p><em>(Placeholder: Adjon hozzá linkeket a leggyakoribb böngészők sütikezelési útmutatóihoz.)</em></p>
+            </section>
+
+            <section id="valtozasok" class="mb-4">
+                <h2 class="section-title-secondary">9. A Nyilatkozat Módosítása</h2>
+                <p>Fenntartjuk a jogot, hogy ezt az Adatvédelmi Nyilatkozatot időnként frissítsük. A módosítások a Honlapon való közzététellel lépnek hatályba. Kérjük, rendszeresen ellenőrizze ezt az oldalt a legfrissebb információkért.</p>
+            </section>
+
+            <section id="kapcsolat-adatvedelem" class="mb-4">
+                <h2 class="section-title-secondary">10. Kapcsolatfelvétel Adatvédelmi Kérdésekben</h2>
+                <p>Amennyiben bármilyen kérdése vagy észrevétele van adatkezelési gyakorlatunkkal kapcsolatban, kérjük, lépjen kapcsolatba velünk az alábbi elérhetőségeken:</p>
+                <p>
+                    <strong>Adatvédelmi Felelős / Kapcsolattartó:</strong> (Placeholder: Adja meg a felelős nevét/beosztását vagy egy általános elérhetőséget erre a célra)<br>
+                    <strong>E-mail:</strong> <a href="mailto:@dpoEmail">@dpoEmail</a><br>
+                    @if(!string.IsNullOrEmpty(dpoPhone)) {
+                         <strong>Telefon:</strong> @dpoPhone <br />
+                    }
+                    <strong>Postai cím:</strong> @officialAddress
+                </p>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .privacy-policy-content section {
+        margin-bottom: 2.5rem; /* More space between sections */
+    }
+    .privacy-policy-content h2 { /* Specific styling for section titles on this page */
+        /* color: var(--primary-color); */ /* Already using section-title-secondary */
+        /* margin-bottom: 1rem; */
+    }
+    .privacy-policy-content p, .privacy-policy-content li {
+        line-height: 1.7;
+        text-align: justify; /* Justified text for formal documents */
+        margin-bottom: 0.8rem;
+    }
+    .privacy-policy-content ul {
+        padding-left: 1.5rem; /* Standard indent for lists */
+    }
+    .card-body {
+        font-size: 0.95rem; /* Slightly smaller font for dense text if desired */
+    }
+</style>
+}

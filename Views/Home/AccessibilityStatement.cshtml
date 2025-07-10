@@ -1,0 +1,118 @@
+﻿@{
+    ViewData["Title"] = "Akadálymentesítési Nyilatkozat";
+    var municipalityName = "Nádasdladány Község Önkormányzata";
+    var websiteUrl = "www.nadasdladany.hu"; // Or use Context.Request.Host
+    var contactEmailForAccessibility = "akadalymentesites@nadasdladany.hu (Placeholder)";
+    var contactPhoneForAccessibility = "+36 (xx) xxx-xxxx (Placeholder)";
+    var lastStatementUpdate = new DateTime(2024, 6, 1); // !!! UPDATE THIS DATE !!!
+    var applicableLaw = "a közszférabeli szervezetek honlapjainak és mobilalkalmazásainak akadálymentesítéséről szóló 2018. évi LXXV. törvénynek"; // Hungarian law example
+    var conformanceStandard = "WCAG 2.1 AA szint"; // Example: Web Content Accessibility Guidelines 2.1 Level AA
+    var officialAddress = "8145 Nádasdladány, Fő utca 1. (Placeholder)";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Elkötelezettek vagyunk amellett, hogy honlapunkat minél több ember számára elérhetővé tegyük.</p>
+    </div>
+
+    <div class="card shadow-sm reveal-on-scroll" style="animation-delay: 0.1s;">
+        <div class="card-body p-4 p-md-5">
+            <p class="text-muted fst-italic">Jelen nyilatkozat utolsó felülvizsgálatának időpontja: @lastStatementUpdate.ToString("yyyy. MMMM dd.")</p>
+            <hr>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">1. Elkötelezettség az akadálymentesítés mellett</h2>
+                <p>A @municipalityName elkötelezett amellett, hogy a [@websiteUrl] honlapot @applicableLaw megfelelően akadálymentessé tegye. Célunk, hogy weboldalunk mindenki számára, fogyatékosságtól függetlenül, könnyen használható és érthető legyen.</p>
+                <p>Folyamatosan törekszünk arra, hogy megfeleljünk a @conformanceStandard nemzetközi irányelveknek.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">2. Megfelelőségi állapot</h2>
+                <p>Ez a honlap jelenleg [VÁLASSZON: részben megfelel / teljes mértékben megfelel / nem felel meg] a @applicableLaw által előírt követelményeknek, valamint a @conformanceStandard ajánlásainak.</p>
+                <p><em>(Placeholder: Ha "részben megfelel" vagy "nem felel meg", itt kell felsorolni azokat a tartalmakat vagy funkciókat, amelyek nem akadálymentesek, és az okokat.)</em></p>
+                <p><strong>Példák a nem akadálymentes tartalmakra (ha vannak):</strong></p>
+                <ul>
+                    <li><em>(Placeholder: Régebbi PDF dokumentumok, amelyek nem rendelkeznek megfelelő címkékkel vagy szöveges alternatívákkal.)</em></li>
+                    <li><em>(Placeholder: Egyes videók nem rendelkeznek felirattal vagy akadálymentes lejátszóval.)</em></li>
+                    <li><em>(Placeholder: Interaktív térképek, amelyek nehezen navigálhatók billentyűzettel.)</em></li>
+                </ul>
+                <p><em>(Placeholder: Indokolja, miért nem akadálymentesek ezek a tartalmak, pl. aránytalan teher, fejlesztés alatt áll, stb.)</em></p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">3. Megtett intézkedések</h2>
+                <p>Az akadálymentesség biztosítása érdekében az alábbi intézkedéseket tettük vagy tervezzük:</p>
+                <ul>
+                    <li><em>(Placeholder: A weboldal tervezése és fejlesztése során figyelembe vettük az akadálymentességi szempontokat.)</em></li>
+                    <li><em>(Placeholder: Rendszeres belső ellenőrzések és tesztelések végzése.)</em></li>
+                    <li><em>(Placeholder: Lehetőség biztosítása a betűméret növelésére a böngésző funkcióival.)</em></li>
+                    <li><em>(Placeholder: Kontrasztos megjelenés biztosítása.)</em></li>
+                    <li><em>(Placeholder: Billentyűzettel történő navigáció támogatása.)</em></li>
+                    <li><em>(Placeholder: Képekhez alternatív szövegek biztosítása.)</em></li>
+                    <li><em>(Placeholder: Munkatársaink képzése az akadálymentes tartalomkészítésről.)</em></li>
+                </ul>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">4. Alternatív hozzáférési lehetőségek</h2>
+                <p>Amennyiben Ön akadályba ütközik a honlap használata során, és nem tud hozzáférni valamely információhoz, kérjük, vegye fel velünk a kapcsolatot az alábbi elérhetőségeken, és igyekszünk az információt más, az Ön számára hozzáférhető formában biztosítani:</p>
+                <ul>
+                    <li>E-mail: <a href="mailto:@contactEmailForAccessibility">@contactEmailForAccessibility</a></li>
+                    <li>Telefon: <a href="tel:@contactPhoneForAccessibility.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "")">@contactPhoneForAccessibility</a></li>
+                    <li class="mb-2"><i class="bi bi-building me-2 text-primary"></i><strong>Személyesen:</strong> @officialAddress (ügyfélfogadási időben - részletek a <a asp-controller="Municipality" asp-action="Office">Polgármesteri Hivatal</a> oldalon)</li>
+                </ul>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">5. Visszajelzés és kapcsolattartás</h2>
+                <p>Várjuk visszajelzését a honlap akadálymentességével kapcsolatban. Ha bármilyen problémát észlel, vagy javaslata van, kérjük, jelezze felénk:</p>
+                <ul>
+                    <li>E-mail: <a href="mailto:@contactEmailForAccessibility">@contactEmailForAccessibility</a></li>
+                    <li>A <a asp-controller="Contact" asp-action="Index">Kapcsolatfelvételi űrlapunkon</a> keresztül.</li>
+                </ul>
+                <p>Minden visszajelzést komolyan veszünk, és igyekszünk a problémákat a lehető leghamarabb orvosolni.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">6. Jogorvoslati eljárás / Felügyeleti szerv</h2>
+                <p>Amennyiben úgy ítéli meg, hogy a honlap nem felel meg az akadálymentesítési követelményeknek, vagy ha a visszajelzésére nem kapott kielégítő választ [X napon (Placeholder: pl. 30 napon)] belül, jogorvoslattal élhet.</p>
+                <p><em>(Placeholder: Itt kell megadni a hivatalos magyarországi felügyeleti szerv nevét és elérhetőségét, ahová panasszal lehet fordulni. Ez valószínűleg a Kormányzati Informatikai Fejlesztési Ügynökség (KIFÜ) vagy hasonló hatóság.)</em></p>
+                <p><strong>Példa Felügyeleti Szerv (ellenőrizze a helyességét!):</strong></p>
+                <p>
+                    Nemzeti Média- és Hírközlési Hatóság (NMHH) <br />
+                    Cím: (Placeholder: NMHH Címe) <br />
+                    E-mail: (Placeholder: NMHH Email) <br />
+                    Honlap: (Placeholder: NMHH Honlap)
+                </p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="section-title-secondary">7. A nyilatkozat elkészítése</h2>
+                <p>Ezt az akadálymentesítési nyilatkozatot a @municipalityName készítette [év. hónap nap.] (Placeholder: A nyilatkozat elkészítésének dátuma) napján, [módszer (pl. önértékelés, külső audit)] alapján.</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Styles specific to accessibility statement if needed, similar to privacy policy */
+        .accessibility-statement-content section {
+            margin-bottom: 2.5rem;
+        }
+
+        .accessibility-statement-content h2 { /* Using section-title-secondary */
+        }
+
+        .accessibility-statement-content p, .accessibility-statement-content li {
+            line-height: 1.7;
+            text-align: justify;
+            margin-bottom: 0.8rem;
+        }
+
+        .accessibility-statement-content ul {
+            padding-left: 1.5rem;
+        }
+    </style>
+}

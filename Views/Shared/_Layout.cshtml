@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Nadasdladany.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="utf-8" />
@@ -15,6 +20,51 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+        .admin-mode-indicator {
+            position: fixed;
+            bottom: 20px; /* Adjust as needed */
+            right: 20px; /* Adjust as needed */
+            padding: 6px 12px;
+            background-color: transparent; /* Slightly transparent white for light theme visibility */
+            border: 1px solid black; /* Uses your main text color (dark) for border */
+            color: black; /* Uses your main text color (dark) for text */
+            border-radius: 20px; /* Pill shape */
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 1050;
+            cursor: default;
+            opacity: 0.85;
+            transition: opacity 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+        }
+
+            .admin-mode-indicator:hover {
+                opacity: 1;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            }
+
+            .admin-mode-indicator .bi {
+                margin-right: 5px;
+            }
+
+            .admin-mode-indicator form {
+                display: inline; /* To keep it on the same line */
+            }
+
+            .admin-mode-indicator .btn-link {
+                color: inherit !important; /* Inherit color from .admin-mode-indicator */
+                text-decoration: none !important;
+                padding: 0;
+                vertical-align: baseline;
+                line-height: 1; /* Ensure icon aligns well */
+            }
+
+                .admin-mode-indicator .btn-link:hover i.bi {
+                    color: black; /* Or your danger color */
+                }
+    </style>
 </head>
 <body>
     <header>
@@ -108,7 +158,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Municipality" asp-action="OfficeHours">
+                            <a class="nav-link" asp-controller="Municipality" asp-action="Office">
                                 <i class="bi bi-clock-history"></i> Ügyfélfogadás
                             </a>
                         </li>
@@ -127,6 +177,19 @@
             </main>
         </div>
     </div>
+
+    @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+    {
+        <div class="admin-mode-indicator" title="Adminisztrátori mód aktív">
+            <i class="bi bi-shield-check"></i> Admin Mód
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline ms-2">
+                 @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-link btn-sm p-0" style="color: inherit; text-decoration: none; vertical-align: baseline;" title="Kijelentkezés">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    }
 
     <footer class="footer-modern text-white pt-5 pb-4">
         <div class="container text-center text-md-start">

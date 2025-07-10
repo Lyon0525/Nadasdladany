@@ -1,0 +1,172 @@
+﻿@model IEnumerable<Nadasdladany.Models.GalleryImage>
+@{
+    ViewData["Title"] = ViewData["Title"] as string ?? "Galéria"; // Title set by controller
+    var albums = ViewBag.Albums as List<Nadasdladany.Models.GalleryAlbum> ?? new List<Nadasdladany.Models.GalleryAlbum>();
+    var currentAlbumSlug = ViewBag.CurrentAlbumSlug as string;
+    var currentAlbum = ViewBag.CurrentAlbum as Nadasdladany.Models.GalleryAlbum;
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        @if (currentAlbum != null && !string.IsNullOrEmpty(currentAlbum.Description))
+        {
+            <p class="lead text-muted-color">@currentAlbum.Description</p>
+        }
+        else
+        {
+            <p class="lead text-muted-color">Válogatás községünk életének legszebb pillanataiból, eseményeiből és látnivalóiból.</p>
+        }
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning text-center">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (albums.Any())
+    {
+        <div class="gallery-filters text-center mb-4 pb-3 border-bottom reveal-on-scroll" style="animation-delay:0.1s;">
+            <a asp-action="Index" asp-controller="Gallery" asp-route-albumSlug="" class="btn btn-sm @(string.IsNullOrEmpty(currentAlbumSlug) ? "btn-primary active-filter" : "btn-outline-primary") me-1 mb-2">Összes Kép</a>
+            @foreach (var album in albums)
+            {
+                <a asp-action="Index" asp-controller="Gallery" asp-route-albumSlug="@album.Slug" class="btn btn-sm @(currentAlbumSlug == album.Slug ? "btn-primary active-filter" : "btn-outline-primary") me-1 mb-2">@album.Title</a>
+            }
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-3 gallery-grid">
+            @foreach (var image in Model)
+            {
+                var thumbUrl = !string.IsNullOrEmpty(image.ThumbnailUrl) ? image.ThumbnailUrl : image.ImageUrl;
+                var imageTitleForModal = image.Title ?? (image.GalleryAlbum != null ? image.GalleryAlbum.Title : "Galéria Kép");
+                var imageDescForModal = image.Description ?? "";
+
+                <div class="col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(image) * 0.03)s;">
+                    <div class="card gallery-item-card shadow-sm w-100">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal"
+                           data-image-url="@Url.Content(image.ImageUrl)"
+                           data-image-title="@imageTitleForModal"
+                           data-image-description="@imageDescForModal"
+                           class="gallery-thumbnail-link">
+                            <img src="@Url.Content(thumbUrl)" class="card-img-top gallery-thumbnail" alt="@(image.AltText ?? image.Title ?? "Galéria kép")">
+                        </a>
+                        @if (!string.IsNullOrEmpty(image.Title))
+                        {
+                            <div class="card-body text-center py-2 px-2">
+                                <small class="card-text text-muted">@image.Title</small>
+                            </div>
+                        }
+                        @if (image.GalleryAlbum != null && string.IsNullOrEmpty(currentAlbumSlug)) // Show album name if viewing "All Images"
+                        {
+                            <div class="card-footer bg-light-subtle text-center py-1">
+                                <small class="text-muted" style="font-size: 0.75rem;">Album: @image.GalleryAlbum.Title</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mt-4 text-center shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i>Nincsenek megjeleníthető képek ebben az albumban vagy kategóriában.
+        </div>
+    }
+</div>
+
+<!-- Image Modal (No changes needed here from previous version) -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <!-- ... (modal structure as before) ... -->
+</div>
+
+@section Styles {
+    <style>
+        .gallery-grid .gallery-item-card {
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+            .gallery-grid .gallery-item-card:hover {
+                transform: translateY(-5px) scale(1.03);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+            }
+
+        .gallery-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            background-color: var(--dark-bg); /* Dark modal */
+            color: var(--text-color-light);
+        }
+
+        .modal-header, .modal-footer {
+            border-color: rgba(255,255,255,0.2);
+        }
+        /* Light border for dark modal */
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        /* Ensure close button is visible on dark */
+        #modalImage {
+            max-height: 80vh;
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+
+        #modalDescriptionContainer {
+            background-color: rgba(0,0,0,0.3);
+            min-height: 50px;
+            padding: 0.5rem 1rem;
+        }
+
+        .active-filter {
+            font-weight: bold; /* For filter buttons */
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Modal JS from previous version (document.addEventListener('DOMContentLoaded', ...))
+        // This should still work fine.
+        document.addEventListener('DOMContentLoaded', function () {
+            var imageModal = document.getElementById('imageModal');
+            if (imageModal) {
+                imageModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var imageUrl = button.getAttribute('data-image-url');
+                    var imageTitle = button.getAttribute('data-image-title');
+                    var imageDescription = button.getAttribute('data-image-description');
+
+                    var modalTitle = imageModal.querySelector('.modal-title');
+                    var modalImage = imageModal.querySelector('#modalImage');
+                    var modalDescriptionContainer = imageModal.querySelector('#modalDescriptionContainer');
+
+                    modalTitle.textContent = imageTitle || 'Képnézegető';
+                    modalImage.src = imageUrl;
+                    modalImage.alt = imageTitle || 'Nagyított kép';
+
+                    if(imageDescription && imageDescription.trim() !== "") {
+                        modalDescriptionContainer.innerHTML = `<p class="mb-0 small">${imageDescription}</p>`;
+                        modalDescriptionContainer.style.display = 'block';
+                    } else {
+                        modalDescriptionContainer.innerHTML = '';
+                        modalDescriptionContainer.style.display = 'none'; // Hide if no description
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Nadasdladany.Models;
 
 namespace Nadasdladany.Data
 {
-    public class NadasdladanyDbContext : DbContext
+    public class NadasdladanyDbContext : IdentityDbContext<ApplicationUser>
     {
         public NadasdladanyDbContext(DbContextOptions<NadasdladanyDbContext> options)
             : base(options)
@@ -15,11 +16,14 @@ namespace Nadasdladany.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentCategory> DocumentCategories { get; set; }
-        public DbSet<ContactSubmission> ContactSubmissions { get; set; } // If you decided to store contact messages
+        public DbSet<ContactSubmission> ContactSubmissions { get; set; } 
         public DbSet<OfficeInfo> OfficeInfos { get; set; }
         public DbSet<OfficeHourEntry> OfficeHourEntries { get; set; }
         public DbSet<Representative> Representatives { get; set; }
-        public DbSet<Institution> Institutions { get; set; } // <<-- ADD THIS DbSet
+        public DbSet<Institution> Institutions { get; set; } 
+        public DbSet<GalleryImage> GalleryImages { get; set; }   
+        public DbSet<GalleryAlbum> GalleryAlbums { get; set; }
+        public DbSet<UsefulLink> UsefulLinks { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,6 +56,9 @@ namespace Nadasdladany.Data
 
         private void SeedData(ModelBuilder modelBuilder)
         {
+            DateTime fixedReferenceDateForArticles = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime fixedReferenceDateForEvents = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc); // Fixed future base
+            DateTime fixedReferenceDateForGallery = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             // Seed Categories
             var catPolitics = new Category { Id = 1, Name = "Önkormányzati Hírek", Slug = "onkormanyzati-hirek", Description = "Hírek a helyi önkormányzat működéséről." };
             var catCommunity = new Category { Id = 2, Name = "Közösségi Események", Slug = "kozossegi-esemenyek", Description = "Információk a település közösségi programjairól." };
@@ -60,109 +67,107 @@ namespace Nadasdladany.Data
 
             // Seed Articles
             modelBuilder.Entity<Article>().HasData(
-                new Article
-                {
-                    Id = 1,
-                    Title = "Ünnepi Megemlékezés a Főtéren",
-                    Slug = "unnepi-megemlekezes-foteren",
-                    Content = "<p>Részletes leírás az ünnepi megemlékezésről, amely a nemzeti ünnepünk alkalmából került megrendezésre a község főterén. Beszédet mondott Varga Tünde polgármester asszony.</p>",
-                    Excerpt = "Rövid összefoglaló az ünnepi megemlékezésről, amely a főtéren került megrendezésre.",
-                    FeaturedImageUrl = "/images/placeholder/news_placeholder_1.jpg", // Placeholder
-                    PublishedDate = DateTime.SpecifyKind(new DateTime(2024, 3, 15, 10, 0, 0), DateTimeKind.Utc),
-                    LastModifiedDate = DateTime.SpecifyKind(new DateTime(2024, 3, 15, 10, 0, 0), DateTimeKind.Utc),
-                    Author = "Nádasdladány Önkormányzat",
-                    IsPublished = true,
-                    CategoryId = catCommunity.Id
-                },
-                new Article
-                {
-                    Id = 2,
-                    Title = "Új Játszótér Átadása a Kossuth Utcában",
-                    Slug = "uj-jatszoter-atadasa-kossuth-utcaban",
-                    Content = "<p>Az új játszótér átadásának részletei. Modern játékokkal és biztonságos környezettel várjuk a gyermekeket és családjaikat.</p>",
-                    Excerpt = "Örömmel jelentjük be, hogy átadásra került a felújított központi játszótér a Kossuth utcában.",
-                    FeaturedImageUrl = "/images/placeholder/news_placeholder_2.jpg", // Placeholder
-                    PublishedDate = DateTime.SpecifyKind(new DateTime(2024, 4, 22, 14, 0, 0), DateTimeKind.Utc),
-                    LastModifiedDate = DateTime.SpecifyKind(new DateTime(2024, 4, 22, 14, 0, 0), DateTimeKind.Utc),
-                    Author = "Nádasdladány Önkormányzat",
-                    IsPublished = true,
-                    CategoryId = catPolitics.Id
-                },
-                new Article
-                {
-                    Id = 3,
-                    Title = "Közmeghallgatás Időpontja és Témái",
-                    Slug = "kozmeghallgatas-idopontja-temai",
-                    Content = "<p>Tájékoztatjuk a tisztelt lakosságot, hogy a következő közmeghallgatás időpontja 2024. május 15., 17:00. Helyszín: Művelődési Ház. Témák: éves költségvetés, fejlesztési tervek.</p>",
-                    Excerpt = "Fontos információk a következő közmeghallgatásról, melynek fő témái a költségvetés és a fejlesztések lesznek.",
-                    PublishedDate = DateTime.SpecifyKind(new DateTime(2024, 5, 1, 9, 0, 0), DateTimeKind.Utc),
-                    LastModifiedDate = DateTime.SpecifyKind(new DateTime(2024, 5, 1, 9, 0, 0), DateTimeKind.Utc),
-                    Author = "Nádasdladány Önkormányzat",
-                    IsPublished = true,
-                    CategoryId = catAnnouncements.Id
-                }
-            );
+               new Article
+               {
+                   Id = 1,
+                   Title = "Ünnepi Megemlékezés a Főtéren",
+                   Slug = "unnepi-megemlekezes-foteren",
+                   Content = "<p>...</p>",
+                   Excerpt = "...",
+                   FeaturedImageUrl = "/images/placeholder/news_placeholder_1.jpg",
+                   PublishedDate = new DateTime(2024, 3, 15, 10, 0, 0, DateTimeKind.Utc), // Fixed
+                   LastModifiedDate = new DateTime(2024, 3, 15, 10, 0, 0, DateTimeKind.Utc), // Fixed
+                   Author = "Nádasdladány Önkormányzat",
+                   IsPublished = true,
+                   CategoryId = catCommunity.Id
+               },
+               new Article
+               {
+                   Id = 2,
+                   Title = "Új Játszótér Átadása a Kossuth Utcában",
+                   Slug = "uj-jatszoter-atadasa-kossuth-utcaban",
+                   Content = "<p>...</p>",
+                   Excerpt = "...",
+                   FeaturedImageUrl = "/images/placeholder/news_placeholder_2.jpg",
+                   PublishedDate = new DateTime(2024, 4, 22, 14, 0, 0, DateTimeKind.Utc), // Fixed
+                   LastModifiedDate = new DateTime(2024, 4, 22, 14, 0, 0, DateTimeKind.Utc), // Fixed
+                   Author = "Nádasdladány Önkormányzat",
+                   IsPublished = true,
+                   CategoryId = catPolitics.Id
+               },
+               new Article
+               {
+                   Id = 3,
+                   Title = "Közmeghallgatás Időpontja és Témái",
+                   Slug = "kozmeghallgatas-idopontja-temai",
+                   Content = "<p>...</p>",
+                   Excerpt = "...",
+                   PublishedDate = new DateTime(2024, 5, 1, 9, 0, 0, DateTimeKind.Utc), // Fixed
+                   LastModifiedDate = new DateTime(2024, 5, 1, 9, 0, 0, DateTimeKind.Utc), // Fixed
+                   Author = "Nádasdladány Önkormányzat",
+                   IsPublished = true,
+                   CategoryId = catAnnouncements.Id
+               }
+           );
 
             // Seed Events (using future dates relative to a fixed point for consistency)
             var baseDate = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc); // A fixed future base date for seeding
 
             modelBuilder.Entity<Event>().HasData(
+               new Event
+               {
+                   Id = 1,
+                   Title = "Nádasdladányi Falunap 2024",
+                   Description = "...",
+                   StartDate = fixedReferenceDateForEvents.AddDays(15).AddHours(10), // June 16, 2024 10:00 UTC
+                   EndDate = fixedReferenceDateForEvents.AddDays(15).AddHours(22),   // June 16, 2024 22:00 UTC
+                   Location = "Községi Sportpálya és Szabadidőpark",
+                   Organizer = "Nádasdladány Önkormányzat",
+                   EventUrl = "/esemenyek/falunap-2024",
+                   IsAllDay = false,
+                   IsPublished = true,
+                   Slug = "nadasdladanyi-falunap-2024" // Fixed slug
+               },
+               new Event
+               {
+                   Id = 2,
+                   Title = "Könyvtári Olvasóklub: Nyári Olvasmányok 2024",
+                   Description = "...",
+                   StartDate = fixedReferenceDateForEvents.AddDays(25).AddHours(17), // June 26, 2024 17:00 UTC
+                   EndDate = fixedReferenceDateForEvents.AddDays(25).AddHours(18),   // June 26, 2024 18:00 UTC
+                   Location = "Helyi Könyvtár Olvasóterme",
+                   Organizer = "Nádasdladányi Könyvtár",
+                   ContactInfo = "konyvtar@nadasdladany.hu",
+                   IsAllDay = false,
+                   IsPublished = true,
+                   Slug = "konyvtari-olvasoklub-nyari-olvasmanyok-2024" // Fixed slug
+               },
                 new Event
                 {
-                    Id = 1,
-                    Title = "Nádasdladányi Falunap 2024",
-                    Description = "Egész napos programok kicsiknek és nagyoknak. Koncertek, főzőverseny, kézműves vásár, gyerekprogramok és esti tűzijáték.",
-                    StartDate = baseDate.AddDays(15).AddHours(10), // Example: June 16, 10:00 (Kind will be Utc)
-                    EndDate = baseDate.AddDays(15).AddHours(22),   // Example: June 16, 22:00 (Kind will be Utc)
-                    Location = "Községi Sportpálya és Szabadidőpark",
-                    Organizer = "Nádasdladány Önkormányzat",
-                    EventUrl = "/esemenyek/falunap-2024", // This EventUrl is relative, might be better as full or handled differently.
-                                                          // Or just use Slug for routing and EventUrl for external links.
-                    IsAllDay = false, // Explicitly set if your model defaults to false
-                    IsPublished = true,
-                    Slug = "nadasdladanyi-falunap-" + baseDate.AddDays(15).Year // Example slug
-                },
-                new Event
-                {
-                    Id = 2,
-                    Title = "Könyvtári Olvasóklub: Nyári Olvasmányok",
-                    Description = "Beszélgetés a nyár legnépszerűbb könyveiről, ajánlók és közös élmények megosztása.",
-                    StartDate = baseDate.AddDays(25).AddHours(17), // Example: June 26, 17:00
-                    EndDate = baseDate.AddDays(25).AddHours(18),   // Example: June 26, 18:00
-                    Location = "Helyi Könyvtár Olvasóterme",
-                    Organizer = "Nádasdladányi Könyvtár",
-                    ContactInfo = "konyvtar@nadasdladany.hu",
+                    Id = 3,
+                    Title = "Idősek Napja Ünnepség 2024",
+                    Description = "...",
+                    StartDate = fixedReferenceDateForEvents.AddMonths(1).AddDays(10).AddHours(15), // July 11, 2024 15:00 UTC
+                    Location = "Művelődési Ház",
+                    Organizer = "Nádasdladány Önkormányzat és a Helyi Nyugdíjas Klub",
                     IsAllDay = false,
                     IsPublished = true,
-                    Slug = "konyvtari-olvasoklub-nyari-olvasmanyok" // Example slug
+                    Slug = "idosek-napja-unnepseg-2024" // Fixed slug
                 },
                  new Event
                  {
-                     Id = 3,
-                     Title = "Idősek Napja Ünnepség",
-                     Description = "Szeretettel várjuk szépkorú lakosainkat egy közös ünnepségre a Művelődési Ház nagytermében. Ünnepi műsorral és vendéglátással készülünk.",
-                     StartDate = baseDate.AddMonths(1).AddDays(10).AddHours(15), // Example: July 11, 15:00
-                     // EndDate = null, // If it's a single point in time or duration isn't fixed.
-                     Location = "Művelődési Ház",
-                     Organizer = "Nádasdladány Önkormányzat és a Helyi Nyugdíjas Klub",
+                     Id = 4,
+                     Title = "Nádasdladányi Falunap 2025",
+                     Description = "...",
+                     StartDate = new DateTime(2026, 6, 9, 10, 0, 0, DateTimeKind.Utc), // Fixed
+                     EndDate = new DateTime(2026, 6, 9, 23, 0, 0, DateTimeKind.Utc),   // Fixed
+                     Location = "Központi Rendezvénytér",
+                     Organizer = "Nádasdladány Önkormányzata",
+                     EventUrl = null,
                      IsAllDay = false,
                      IsPublished = true,
-                     Slug = "idosek-napja-unnepseg-" + baseDate.AddMonths(1).Year // Example slug
-                 },
-                  new Event
-                  {
-                      Id = 4, // Ensure this ID is unique among seeded events
-                      Title = "Nádasdladányi Falunap 2026",
-                      Description = "Nagyszabású falunap sok meglepetéssel, hagyományőrző programokkal, esti koncerttel és tűzijátékkal ünnepeljük községünket!",
-                      StartDate = new DateTime(2026, 6, 9, 10, 0, 0, DateTimeKind.Utc), // June 9, 2026, 10:00 AM UTC
-                      EndDate = new DateTime(2026, 6, 9, 23, 0, 0, DateTimeKind.Utc),   // June 9, 2026, 11:00 PM UTC
-                      Location = "Központi Rendezvénytér",
-                      Organizer = "Nádasdladány Önkormányzata",
-                      EventUrl = null, // No specific URL yet, or could be like "/esemenyek/falunap-2026"
-                      IsAllDay = false,
-                      IsPublished = true, // Make sure it's published to be visible
-                      Slug = "nadasdladanyi-falunap-2026" // Create a unique slug
-                  }
+                     Slug = "nadasdladanyi-falunap-2026" // Fixed slug
+                 }
             );
             modelBuilder.Entity<DocumentCategory>()
                 .HasIndex(dc => dc.Slug)
@@ -188,14 +193,14 @@ namespace Nadasdladany.Data
                 {
                     Id = 1,
                     Title = "2024. évi költségvetési rendelet",
-                    Description = "Nádasdladány község 2024. évi költségvetéséről szóló 1/2024. (II.15.) önkormányzati rendelet.",
-                    FilePath = "documents/rendeletek/2024/1-2024-koltsegvetes.pdf", // Relative path from a wwwroot base
+                    Description = "...",
+                    FilePath = "documents/rendeletek/2024/1-2024-koltsegvetes.pdf",
                     FileType = "PDF",
                     FileSizeInBytes = 123456,
-                    UploadedDate = DateTime.SpecifyKind(new DateTime(2024, 2, 15), DateTimeKind.Utc),
+                    UploadedDate = new DateTime(2024, 2, 15, 0, 0, 0, DateTimeKind.Utc), // Fixed
                     IsPublished = true,
                     DocumentCategoryId = catRendeletek.Id,
-                    LastModifiedDate = DateTime.SpecifyKind(new DateTime(2024, 2, 15), DateTimeKind.Utc)
+                    LastModifiedDate = new DateTime(2024, 2, 15, 0, 0, 0, DateTimeKind.Utc) // Fixed
                 },
                 new Document
                 {
@@ -369,6 +374,187 @@ namespace Nadasdladany.Data
                     DisplayOrder = 50
                 }
                 // Add more seed data as needed for Védőnői Szolgálat, etc.
+            );
+
+            modelBuilder.Entity<GalleryAlbum>(album => {
+                album.HasIndex(a => a.Slug).IsUnique();
+                album.HasData(
+                    new GalleryAlbum
+                    {
+                        Id = 1,
+                        Title = "Falunapok",
+                        Slug = "falunapok",
+                        Description = "...",
+                        CreatedDate = new DateTime(2023, 1, 10, 0, 0, 0, DateTimeKind.Utc), // WAS DYNAMIC, NOW FIXED
+                        IsPublished = true,
+                        DisplayOrder = 10
+                    },
+                    new GalleryAlbum
+                    {
+                        Id = 2,
+                        Title = "Településképek",
+                        Slug = "telepuleskepek",
+                        Description = "...",
+                        CreatedDate = new DateTime(2023, 1, 15, 0, 0, 0, DateTimeKind.Utc), // WAS DYNAMIC, NOW FIXED
+                        IsPublished = true,
+                        DisplayOrder = 20
+                    },
+                    new GalleryAlbum
+                    {
+                        Id = 3,
+                        Title = "Nádasdy-kastély",
+                        Slug = "nadasdy-kastely",
+                        Description = "...",
+                        CreatedDate = new DateTime(2023, 1, 20, 0, 0, 0, DateTimeKind.Utc), // WAS DYNAMIC, NOW FIXED
+                        IsPublished = true,
+                        DisplayOrder = 5
+                    }
+                );
+            });
+
+            // --- GalleryImage Configuration & Seed ---
+            modelBuilder.Entity<GalleryImage>(image => {
+                // Define the relationship to GalleryAlbum
+                image.HasOne(i => i.GalleryAlbum)
+                     .WithMany(a => a.Images)
+                     .HasForeignKey(i => i.GalleryAlbumId)
+                     .IsRequired(false) // Makes GalleryAlbumId nullable - an image doesn't HAVE to be in an album
+                     .OnDelete(DeleteBehavior.SetNull); // If an album is deleted, set GalleryAlbumId to null for its images
+
+                image.HasData(
+                    new GalleryImage
+                    {
+                        Id = 1,
+                        Title = "Falunapi Forgatag 2023",
+                        Description = "...",
+                        ImageUrl = "/images/gallery/falunap_2023_01.jpg",
+                        ThumbnailUrl = "/images/gallery/thumbs/falunap_2023_01_thumb.jpg",
+                        AltText = "Falunapi tömeg",
+                        UploadedDate = fixedReferenceDateForGallery.AddMonths(11), // Based on a fixed reference
+                        IsPublished = true,
+                        DisplayOrder = 1,
+                        GalleryAlbumId = 1
+                    },
+                    new GalleryImage
+                    {
+                        Id = 2,
+                        Title = "Kastélypark Ősszel",
+                        Description = "...",
+                        ImageUrl = "/images/gallery/kastely_park_osz.jpg",
+                        ThumbnailUrl = "/images/gallery/thumbs/kastely_park_osz_thumb.jpg",
+                        AltText = "Nádasdy kastélypark ősszel",
+                        UploadedDate = fixedReferenceDateForGallery.AddMonths(9), // Based on a fixed reference
+                        IsPublished = true,
+                        DisplayOrder = 1,
+                        GalleryAlbumId = 3
+                    },
+                    new GalleryImage
+                    {
+                        Id = 3,
+                        Title = "Főtér Naplementében",
+                        Description = "Látkép a község főteréről naplementekor.",
+                        ImageUrl = "/images/gallery/foter_naplemente.jpg",
+                        ThumbnailUrl = "/images/gallery/thumbs/foter_naplemente_thumb.jpg",
+                        AltText = "Főtér naplementében",
+                        UploadedDate = fixedReferenceDateForGallery.AddMonths(7),
+                        IsPublished = true,
+                        DisplayOrder = 1,
+                        GalleryAlbumId = 2 // Belongs to "Településképek"
+                    },
+                    new GalleryImage
+                    {
+                        Id = 4,
+                        Title = "Gyerekek a Falunapon",
+                        Description = "Ugrálóvár és vidámság.",
+                        ImageUrl = "/images/gallery/falunap_gyerekek.jpg",
+                        ThumbnailUrl = "/images/gallery/thumbs/falunap_gyerekek_thumb.jpg",
+                        AltText = "Gyerekek az ugrálóvárban",
+                        UploadedDate = fixedReferenceDateForGallery.AddMonths(11),
+                        IsPublished = true,
+                        DisplayOrder = 2,
+                        GalleryAlbumId = 1
+                    },
+                    new GalleryImage
+                    {
+                        Id = 5,
+                        Title = "Kastély Homlokzat",
+                        Description = "A Nádasdy-kastély impozáns főhomlokzata.",
+                        ImageUrl = "/images/gallery/kastely_homlokzat.jpg",
+                        ThumbnailUrl = "/images/gallery/thumbs/kastely_homlokzat_thumb.jpg",
+                        AltText = "Nádasdy-kastély homlokzat",
+                        UploadedDate = fixedReferenceDateForGallery.AddMonths(5),
+                        IsPublished = true,
+                        DisplayOrder = 2,
+                        GalleryAlbumId = 3
+                    }
+                );
+            });
+
+            modelBuilder.Entity<UsefulLink>().HasData(
+                new UsefulLink
+                {
+                    Id = 1,
+                    Title = "Magyarország.hu - Kormányzati Portál",
+                    Url = "https://www.magyarorszag.hu",
+                    Description = "Központi elektronikus ügyintézési és információs portál.",
+                    OpenInNewTab = true,
+                    Category = "Kormányzati",
+                    IsPublished = true,
+                    DisplayOrder = 10
+                },
+                new UsefulLink
+                {
+                    Id = 2,
+                    Title = "Nemzeti Adó- és Vámhivatal (NAV)",
+                    Url = "https://www.nav.gov.hu",
+                    Description = "Adóügyekkel kapcsolatos információk és online ügyintézés.",
+                    OpenInNewTab = true,
+                    Category = "Kormányzati",
+                    IsPublished = true,
+                    DisplayOrder = 20
+                },
+                new UsefulLink
+                {
+                    Id = 3,
+                    Title = "Fejér Vármegyei Kormányhivatal",
+                    Url = "http://www.kormanyhivatal.hu/hu/fejer", // Verify exact URL
+                    Description = "A vármegyei kormányhivatal hivatalos oldala.",
+                    OpenInNewTab = true,
+                    Category = "Kormányzati",
+                    IsPublished = true,
+                    DisplayOrder = 30
+                },
+                new UsefulLink
+                {
+                    Id = 4,
+                    Title = "Helyi Hulladékszállítási Információk (VERTIKÁL)",
+                    Url = "https://www.vertikalzrt.hu/", // Example, replace with actual provider if different
+                    Description = "Hulladéknaptár és információk a szelektív hulladékgyűjtésről.",
+                    OpenInNewTab = true,
+                    Category = "Helyi Szolgáltatások",
+                    IsPublished = true,
+                    DisplayOrder = 40
+                },
+                new UsefulLink
+                {
+                    Id = 5,
+                    Title = "MÁV-START (Vasúti Menetrend)",
+                    Url = "https://www.mavcsoport.hu/mav-start/belfoldi-utazas/menetrend",
+                    OpenInNewTab = true,
+                    Category = "Közlekedés",
+                    IsPublished = true,
+                    DisplayOrder = 50
+                },
+                new UsefulLink
+                {
+                    Id = 6,
+                    Title = "Volánbusz (Autóbusz Menetrend)",
+                    Url = "https://www.volanbusz.hu/hu/menetrendek",
+                    OpenInNewTab = true,
+                    Category = "Közlekedés",
+                    IsPublished = true,
+                    DisplayOrder = 60
+                }
             );
         }
     }

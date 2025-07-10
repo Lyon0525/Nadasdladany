@@ -1,0 +1,68 @@
+﻿@model Dictionary<string, List<Nadasdladany.Models.UsefulLink>>
+@{
+    ViewData["Title"] = "Hasznos Linkek";
+    var categories = ViewBag.LinkCategories as List<string> ?? new List<string>();
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4 text-center reveal-on-scroll">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead text-muted-color">Fontos és hasznos hivatkozások gyűjteménye kategóriákba rendezve.</p>
+    </div>
+
+    @if (categories.Any())
+    {
+        <div class="link-filters text-center mb-4 pb-3 border-bottom reveal-on-scroll" style="animation-delay:0.1s;">
+            <a asp-action="PublicServices" asp-route-category="" class="btn btn-sm btn-primary active-filter me-1 mb-2">Összes (Csoportosítva)</a>
+            @foreach (var cat in categories)
+            {
+                <a asp-action="PublicServices" asp-route-category="@cat" class="btn btn-sm btn-outline-primary me-1 mb-2">@cat</a>
+            }
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var group in Model)
+        {
+            <section class="mb-5 reveal-on-scroll" style="animation-delay: @(Model.Keys.ToList().IndexOf(group.Key) * 0.1)s;">
+                <h3 class="section-title-secondary">@group.Key</h3>
+                <div class="list-group shadow-sm">
+                    @foreach (var link in group.Value.OrderBy(l => l.DisplayOrder).ThenBy(l => l.Title))
+                    {
+                        <a href="@link.Url" class="list-group-item list-group-item-action"
+                           target="@(link.OpenInNewTab ? "_blank" : "_self")" rel="@(link.OpenInNewTab ? "noopener noreferrer" : "")">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 link-title"><i class="bi bi-link-45deg me-2"></i>@link.Title</h5>
+                                @if (link.OpenInNewTab)
+                                {
+                                    <small class="text-muted"><i class="bi bi-box-arrow-up-right"></i></small>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(link.Description))
+                            {
+                                <p class="mb-1 small link-description text-muted">@link.Description</p>
+                            }
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info mt-4 text-center shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i>Jelenleg nincsenek közzétett hasznos linkek.
+        </div>
+    }
+</div>
+<style>
+    .link-title {
+        color: var(--bs-primary);
+    }
+
+    .list-group-item-action:hover .link-title,
+    .list-group-item-action:focus .link-title {
+        color: var(--primary-color-darker);
+    }
+</style>
