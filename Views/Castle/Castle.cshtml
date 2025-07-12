@@ -1,0 +1,227 @@
+@*
+    This is the new Castle.cshtml file.
+    It links to its own stylesheet for the unique design
+    and includes its own JavaScript for interactivity.
+*@
+
+@{
+    ViewData["Title"] = "Nádasdy-kastély";
+}
+
+@section Styles {
+    @* Link to the new page-specific stylesheet. *@
+    <link rel="stylesheet" href="~/css/Castle.css" />
+    @* Link to the extra fonts used on this page. *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+}
+
+
+
+@* This wrapper helps to scope the unique styles of this page. *@
+<div id="castle-page-wrapper">
+
+    @* The page's own sub-navigation bar, which will appear under the main site navbar. *@
+    <header class="castle-header">
+        <div class="nav-wrapper">
+            <nav id="castle-nav">
+                <a href="#welcome" class="active" data-lang-hu="Kezdőlap" data-lang-en="Welcome">Kezdőlap</a>
+                <a href="#story" data-lang-hu="A Történet" data-lang-en="The Story">A Történet</a>
+                <a href="#experience" data-lang-hu="Az Élmény" data-lang-en="The Experience">Az Élmény</a>
+                <a href="#gallery" data-lang-hu="Galéria" data-lang-en="Gallery">Galéria</a>
+                <a href="#info" data-lang-hu="Tervezd meg a látogatást" data-lang-en="Plan Your Visit">Tervezd meg a látogatást</a>
+            </nav>
+            <button id="lang-switcher" title="Switch Language">English</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="welcome">
+            <div class="hero-text-wrapper">
+                <h1 class="reveal" data-lang-hu="Nádasdy-kastély" data-lang-en="Nádasdy Castle">Nádasdy-kastély</h1>
+                <p class="hero-subtitle reveal" style="transition-delay: 0.2s;" data-lang-hu="Időtlen Élmény, Újragondolva" data-lang-en="A Timeless Experience, Reimagined">Időtlen Élmény, Újragondolva</p>
+            </div>
+        </section>
+
+        <div class="castle-container">
+            <section id="story" class="content-section reveal">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-text">
+                            <h2 data-lang-hu="A Szerelem és Innováció Öröksége" data-lang-en="A Legacy of Love & Innovation">A Szerelem és Innováció Öröksége</h2>
+                            <p data-lang-hu="Nádasdy Ferenc gróf és Zichy Ilona grófnő szerelméből született ez a Tudor-stílusú csoda, amely korának mesterműve volt. Az 1876-ban befejezett épület futurisztikus technológiával büszkélkedett. Újjászületése után a kastély ma romantikus lelkének és innovatív szellemének egyaránt tanúbizonysága." data-lang-en="Born from a romance between Count Ferenc Nádasdy and Countess Ilona Zichy, this Tudor-style marvel was a masterpiece of its time. Completed in 1876, it boasted then-futuristic technology. After its revival, the castle now stands as a testament to both its romantic soul and its innovative spirit.">Nádasdy Ferenc gróf és Zichy Ilona grófnő szerelméből született ez a Tudor-stílusú csoda...</p>
+                        </div>
+                        <div class="feature-image">
+                            <img src="~/img/castle/1920_epiteszforum-visszaforog-az-ido-kereke--a-nadasdladanyi-nadasdy-kastely-ujjateremtesi-programja-1-60-2020-11-09-130415.jpeg" alt="A lenyűgöző, kétszintes könyvtár" data-alt-hu="A lenyűgöző, kétszintes könyvtár" data-alt-en="The magnificent two-story library">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="experience" class="content-section reveal">
+                <h2 data-lang-hu="Az Élmény" data-lang-en="The Experience">Az Élmény</h2>
+                <p data-lang-hu="Felejtsd el a passzív szemlélődést! 'Az újjáéledt kastély legendája' című kiállításunk a történet középpontjába helyez téged." data-lang-en="Forget passive observation. Our exhibition, 'The Legend of the Castle, Revived,' puts you at the heart of the narrative.">Felejtsd el a passzív szemlélődést!...</p>
+                <ul class="castle-list">
+                    <li data-lang-hu="<strong>Digitális Történetmesélés:</strong> Fedezz fel kiterjesztett valóság rétegeket és elmondatlan történeteket a személyes táblagéped segítségével." data-lang-en="<strong>Digital Storytelling:</strong> Unlock augmented reality layers and untold stories with your personal tablet guide."><strong>Digitális Történetmesélés:</strong>...</li>
+                    <li data-lang-hu="<strong>Ébredő Ősök:</strong> Légy tanúja, ahogy a Nádasdy család portréi életre kelnek az Ősök Csarnokában, és digitális varázslattal mesélik el történeteiket." data-lang-en="<strong>Ancestors Awakened:</strong> Witness the Nádasdy family portraits come alive in the Hall of Ancestors, sharing their tales through digital magic."><strong>Ébredő Ősök:</strong>...</li>
+                    <li data-lang-hu="<strong>Történelem a kezedben:</strong> Szerezz saját emlékeket korhű jelmezek felpróbálásával vagy egy üzenet elküldésével a korabeli távírón." data-lang-en="<strong>History in Your Hands:</strong> Create your own memories by trying on period costumes or sending a message on a vintage telegraph."><strong>Történelem a kezedben:</strong>...</li>
+                </ul>
+            </section>
+
+            <section id="gallery" class="content-section reveal">
+                <h2 data-lang-hu="Galéria" data-lang-en="Gallery">Galéria</h2>
+                <div class="gallery">
+                    <a class="gallery-item"><img src="~/img/castle/DJI_0581_2.2-500x500.jpg" alt="Az Ősök Csarnoka" data-alt-hu="Az Ősök Csarnoka" data-alt-en="Hall of Ancestors"></a>
+                    <a class="gallery-item"><img src="~/img/castle/nadasdweb6-scaled.jpg" alt="Kastély külső, részletekkel" data-alt-hu="Kastély külső, részletekkel" data-alt-en="Castle exterior with details"></a>
+                    <a class="gallery-item"><img src="~/img/castle/nadasdweb8-scaled.jpg" alt="A télikert kávézó" data-alt-hu="A télikert kávézó" data-alt-en="Conservatory cafe"></a>
+                    <a class="gallery-item"><img src="~/img/castle/dsc03466-scaled.jpg" alt="Az Ősök Csarnoka belső tere" data-alt-hu="Az Ősök Csarnoka belső tere" data-alt-en="Hall of Ancestors interior"></a>
+                </div>
+            </section>
+
+            <section id="info" class="content-section reveal">
+                <h2 data-lang-hu="Váltsd meg a jegyed a múltba" data-lang-en="Claim Your Ticket to the Past">Váltsd meg a jegyed a múltba</h2>
+                <p style="text-align: center; max-width: 60ch; margin: 0 auto 30px;" data-lang-hu="Foglalj online, hogy biztosítsd a neked megfelelő időpontot. Szeretettel várunk." data-lang-en="Book online to secure your preferred time. We look forward to welcoming you.">Foglalj online, hogy biztosítsd a neked megfelelő időpontot...</p>
+                <div style="text-align: center;">
+                    <a href="https://nadasdladanyikastely.hu/jegyvasarlas/" target="_blank" class="cta-button" data-lang-hu="Foglald le az utazásod" data-lang-en="Book Your Journey">Foglald le az utazásod</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    @* These elements are outside the main container for positioning purposes *@
+    <div id="lightbox">
+        <button id="close-lightbox" title="Close">×</button>
+        <img id="lightbox-image" src="" alt="">
+    </div>
+
+    <button id="backToTop" title="Back to top">↑</button>
+
+</div> @* End of #castle-page-wrapper *@
+
+
+@section Scripts {
+    <script>
+        // All of the page-specific javascript is now safely placed here.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Optional: Smooth scroll to top on page load for a fresh start.
+            window.scrollTo(0, 0);
+
+            // --- LANGUAGE SWITCHER ---
+            let currentLang = 'hu'; // Default language is Hungarian
+            const langSwitcher = document.getElementById('lang-switcher');
+            const translatableElements = document.querySelectorAll('[data-lang-hu], [data-alt-hu]');
+
+            function applyLanguage(lang) {
+                translatableElements.forEach(el => {
+                    const innerHTMLKey = lang === 'hu' ? 'langHu' : 'langEn';
+                    const altKey = lang === 'hu' ? 'altHu' : 'altEn';
+
+                    // Use a temporary div to parse and handle potential <strong> tags
+                    if (el.dataset[innerHTMLKey]) {
+                        el.innerHTML = el.dataset[innerHTMLKey];
+                    }
+                    if (el.dataset[altKey]) {
+                        el.alt = el.dataset[altKey];
+                    }
+                });
+                langSwitcher.textContent = lang === 'hu' ? 'English' : 'Magyar';
+                document.documentElement.lang = lang;
+                currentLang = lang;
+            }
+
+            langSwitcher.addEventListener('click', () => {
+                const newLang = currentLang === 'hu' ? 'en' : 'hu';
+                applyLanguage(newLang);
+            });
+
+            applyLanguage(currentLang); // Apply default language on load
+
+            // --- LIGHTBOX GALLERY LOGIC ---
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const closeBtn = document.getElementById('close-lightbox');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+
+            const openLightbox = (item) => {
+                const imgElement = item.querySelector('img');
+                lightboxImage.src = imgElement.src;
+                lightboxImage.alt = imgElement.alt;
+                lightbox.classList.add('visible');
+                document.body.classList.add('lightbox-open');
+            };
+
+            const closeLightbox = () => {
+                lightbox.classList.remove('visible');
+                document.body.classList.remove('lightbox-open');
+            };
+
+            galleryItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openLightbox(item);
+                });
+            });
+
+            closeBtn.addEventListener('click', closeLightbox);
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lightbox.classList.contains('visible')) {
+                    closeLightbox();
+                }
+            });
+
+            // --- 3D HERO TEXT ON MOUSE MOVE ---
+            if (window.matchMedia("(pointer: fine)").matches) {
+                const heroText = document.querySelector('.hero-text-wrapper');
+                const hero = document.querySelector('.hero');
+                hero.addEventListener('mousemove', (e) => {
+                    const { clientX, clientY } = e;
+                    const { offsetWidth, offsetHeight } = hero;
+                    const x = (clientX / offsetWidth - 0.5) * 20;
+                    const y = (clientY / offsetHeight - 0.5) * 20;
+                    heroText.style.transform = `perspective(1000px) rotateY(${x / 5}deg) rotateX(${-y / 5}deg)`;
+                });
+            }
+
+            // --- NAV HIGHLIGHTER ON SCROLL ---
+            const sections = document.querySelectorAll('main section[id]');
+            const navLinks = document.querySelectorAll('#castle-nav a'); // Updated to new nav ID
+            const navObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting){
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, { rootMargin: '-40% 0px -60% 0px' });
+            sections.forEach(section => navObserver.observe(section));
+
+            // --- REVEAL ON SCROLL ---
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+            // --- BACK TO TOP ---
+            const backToTopBtn = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                backToTopBtn.style.display = window.scrollY > 400 ? 'block' : 'none';
+            });
+            backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        });
+    </script>
+}

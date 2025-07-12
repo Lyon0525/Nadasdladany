@@ -1,4 +1,8 @@
-﻿@model IEnumerable<Nadasdladany.Models.Representative>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model IEnumerable<Nadasdladany.Models.Representative>
 @{
     ViewData["Title"] = "Képviselő-testület";
     var memberCount = Model?.Count() ?? 0;
@@ -9,6 +13,20 @@
         <h1>@ViewData["Title"]</h1>
         <p class="lead text-muted-color">Ismerje meg Nádasdladány Község Önkormányzatának Képviselő-testületének tagjait és munkáját.</p>
     </div>
+
+    @* Display Success/Error messages after form submission *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card shadow-sm mb-5 reveal-on-scroll" style="animation-delay: 0.1s;">
         <div class="card-body">
@@ -24,19 +42,38 @@
 
     <h3 class="text-primary mb-4 reveal-on-scroll text-center" style="animation-delay: 0.2s;">A Képviselő-testület Tagjai</h3>
 
-    @if (Model != null && Model.Any())
-    {
-        <div class="row g-4 justify-content-center">
-            @foreach (var rep in Model.OrderBy(r => r.DisplayOrder).ThenBy(r => r.Name)) // Ensure consistent ordering
+    <div class="row g-4 justify-content-center">
+        @*
+            ADMINISTRATOR "ADD REPRESENTATIVE" CARD
+            This card is the first item in the grid and is only visible to administrators.
+        *@
+        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+        {
+            <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
+                <div class="admin-add-card h-100" data-bs-toggle="modal" data-bs-target="#addRepModal" title="Új képviselő / tisztségviselő hozzáadása">
+                    <div class="admin-add-button"><i class="bi bi-plus-lg"></i></div>
+                </div>
+            </div>
+        }
+
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var rep in Model.OrderBy(r => r.DisplayOrder).ThenBy(r => r.Name))
             {
-                var roleDisplay = rep.CustomTitleOverride ?? rep.Role.ToString();
-                // If role is Polgarmester, make it "Polgármester", etc. - could use a helper for Hungarian display names of enums
-                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Polgarmester) { roleDisplay = "Polgármester"; }
-                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Alpolgarmester) { roleDisplay = "Alpolgármester"; }
-                if (rep.Role == Nadasdladany.Models.RepresentativeRole.Kepviselo) { roleDisplay = "Képviselő"; }
+                // This logic correctly determines what title to display
+                var roleDisplay = rep.CustomTitleOverride;
+                if (string.IsNullOrEmpty(roleDisplay))
+                {
+                    roleDisplay = rep.Role switch
+                    {
+                        Nadasdladany.Models.RepresentativeRole.Polgarmester => "Polgármester",
+                        Nadasdladany.Models.RepresentativeRole.Alpolgarmester => "Alpolgármester",
+                        Nadasdladany.Models.RepresentativeRole.Kepviselo => "Képviselő",
+                        _ => rep.Role.ToString(),
+                    };
+                }
 
-
-                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(rep) * 0.05 + 0.2)s;">
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
                     <div class="card representative-card h-100 shadow w-100 text-center">
                         @if (!string.IsNullOrEmpty(rep.ImageUrl))
                         {
@@ -44,7 +81,7 @@
                         }
                         else
                         {
-                            <img src="~/images/placeholder/avatar-placeholder.png" class="card-img-top representative-img mx-auto mt-3" alt="Avatar">
+                            <img src="~/img/placeholder-avatar.png" class="card-img-top representative-img mx-auto mt-3" alt="Avatar">
                         }
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@rep.Name</h5>
@@ -63,27 +100,32 @@
                     </div>
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info text-center">A képviselő-testület tagjainak adatai feltöltés alatt.</div>
-    }
+        }
+        else if (!User.IsInRole("Administrator"))
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center">A képviselő-testület tagjainak adatai feltöltés alatt.</div>
+            </div>
+        }
+    </div>
+
     <hr class="my-5">
+
     <div class="text-center reveal-on-scroll">
         <a asp-controller="Documents" asp-action="Index" asp-route-categorySlug="jegyzokonyvek" class="btn btn-info btn-lg">
-            <!-- Ensure "jegyzokonyvek" slug exists for DocumentCategory -->
             <i class="bi bi-file-earmark-text-fill me-2"></i>Testületi Ülések Jegyzőkönyvei
         </a>
     </div>
 </div>
+
 <style>
     .representative-card .representative-img {
         width: 150px;
         height: 150px;
         object-fit: cover;
         border-radius: 50%;
-        border: 3px solid #dee2e6;
+        border: 4px solid #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .representative-card {
@@ -95,3 +137,73 @@
             box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
         }
 </style>
+
+@*
+    "ADD REPRESENTATIVE" MODAL
+    This is hidden by default and is only included in the page for administrators.
+*@
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <div class="modal fade" id="addRepModal" tabindex="-1" aria-labelledby="addRepModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="Municipality" asp-action="CreateRepresentative" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addRepModalLabel">Új Képviselő / Tisztségviselő felvétele</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="Name" class="form-label fw-bold">Név</label>
+                            <input type="text" name="Name" class="form-control" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Role" class="form-label fw-bold">Beosztás</label>
+                                <select name="Role" class="form-select" asp-items="Html.GetEnumSelectList<RepresentativeRole>()" required></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="CustomTitleOverride" class="form-label">Egyéni titulus (felülírja a beosztást)</label>
+                                <input type="text" name="CustomTitleOverride" class="form-control" placeholder="Pl. Pénzügyi Bizottság Elnöke">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Email" class="form-label">E-mail cím</label>
+                                <input type="email" name="Email" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="PhoneNumber" class="form-label">Telefonszám</label>
+                                <input type="tel" name="PhoneNumber" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="ImageUrl" class="form-label">Fotó URL</label>
+                                <input type="text" name="ImageUrl" class="form-control" placeholder="/img/reps/minta-kepviselo.jpg">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="DisplayOrder" class="form-label fw-bold">Sorrend</label>
+                                <input type="number" name="DisplayOrder" class="form-control" value="99" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Biography" class="form-label">Bemutatkozás (opcionális)</label>
+                            <textarea name="Biography" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                        <button type="submit" class="btn btn-primary">Személy mentése</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

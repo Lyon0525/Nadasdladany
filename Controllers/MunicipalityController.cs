@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; // For Include, ToListAsync etc.
 using Nadasdladany.Data;    // Your DbContext namespace
 using Nadasdladany.Models; // Your Model namespace
@@ -70,6 +71,42 @@ namespace NadasdladanyWebApp.MVC.Controllers // Or Nadasdladany.Controllers
                                          .ThenBy(r => r.Name)
                                          .ToListAsync();
             return View(councilMembers);
+        }
+
+        // --- NEW ACTION TO HANDLE THE 'ADD REPRESENTATIVE' MODAL FORM ---
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRepresentative(CreateRepresentativeViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var newRep = new Representative
+                {
+                    Name = model.Name,
+                    Role = model.Role,
+                    CustomTitleOverride = model.CustomTitleOverride,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    ImageUrl = model.ImageUrl,
+                    Biography = model.Biography,
+                    DisplayOrder = model.DisplayOrder,
+                    IsPublished = true // Default to published
+                };
+
+                _context.Representatives.Add(newRep);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Képviselő sikeresen hozzáadva!";
+                return RedirectToAction(nameof(Representatives));
+            }
+
+            var errorList = ModelState.Values
+                                .SelectMany(v => v.Errors)
+                                .Select(e => e.ErrorMessage)
+                                .ToList();
+            TempData["ErrorMessage"] = "Hiba történt a mentés során: " + string.Join(" ", errorList);
+            return RedirectToAction(nameof(Representatives));
         }
     }
 }

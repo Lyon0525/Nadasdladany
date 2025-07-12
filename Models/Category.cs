@@ -12,7 +12,7 @@ namespace Nadasdladany.Models
 
         [Required(ErrorMessage = "A \"slug\" kötelező.")]
         [StringLength(100, ErrorMessage = "A \"slug\" maximum 100 karakter lehet.")]
-        public string Slug { get; set; } // For SEO-friendly URLs, e.g., "onkormanyzati-hirek"
+        public string Slug { get; set; }
 
         public string? Description { get; set; }
 

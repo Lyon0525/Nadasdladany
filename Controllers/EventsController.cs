@@ -1,75 +1,79 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nadasdladany.Data;
 using Nadasdladany.Models;
+using Nadasdladany.ViewModels; // Required for the CreateEventViewModel
+using System.Text.RegularExpressions; // Required for slug generation
 
 namespace Nadasdladany.Controllers
 {
     public class EventsController : Controller
     {
-        private readonly NadasdladanyDbContext _context; // Using your DbContext name
-        private const int PageSize = 9; // Number of events per page, adjust as needed
+        private readonly NadasdladanyDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager; // <-- Added
 
-        public EventsController(NadasdladanyDbContext context) // Constructor injects your DbContext
+        // PageSize is adjusted so a full page of 9 items can include the "Add" card for admins
+        private const int PageSize = 8;
+
+        // UPDATED CONSTRUCTOR: Injects both DbContext and UserManager
+        public EventsController(NadasdladanyDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Events or Events/Index
-        // Handles filtering for upcoming, past, or all events, and basic pagination
+        // GET: Events/Index
+        // No major changes were needed here, this action correctly retrieves and filters events.
         public async Task<IActionResult> Index(string? filter = "upcoming", int page = 1)
         {
-            ViewData["Title"] = "Eseménynaptár"; // Event Calendar
+            ViewData["Title"] = "Eseménynaptár";
             IQueryable<Event> eventsQuery = _context.Events
-                                               .Where(e => e.IsPublished); // Only show published events
+                                               .Where(e => e.IsPublished);
 
-            DateTime today = DateTime.UtcNow.Date; // Use UtcNow.Date for comparisons if your DB dates are UTC
+            DateTime today = DateTime.UtcNow.Date;
 
             switch (filter?.ToLower())
             {
                 case "past":
-                    // For past events, EndDate is more relevant if it exists for multi-day events
                     eventsQuery = eventsQuery.Where(e => (e.EndDate.HasValue && e.EndDate.Value < today) || (!e.EndDate.HasValue && e.StartDate < today))
                                            .OrderByDescending(e => e.StartDate);
-                    ViewData["ListTitle"] = "Korábbi Események"; // Past Events
+                    ViewData["ListTitle"] = "Korábbi Események";
                     break;
                 case "all":
                     eventsQuery = eventsQuery.OrderByDescending(e => e.StartDate);
-                    ViewData["ListTitle"] = "Összes Esemény"; // All Events
+                    ViewData["ListTitle"] = "Összes Esemény";
                     break;
                 case "upcoming":
-                default: // Default to upcoming events
-                    eventsQuery = eventsQuery.Where(e => e.StartDate >= today || (e.EndDate.HasValue && e.EndDate.Value >= today))
-                                           .OrderBy(e => e.StartDate); // Upcoming usually ordered ascending by StartDate
-                    ViewData["ListTitle"] = "Közelgő Események"; // Upcoming Events
-                    filter = "upcoming"; // Ensure filter variable is explicitly set for the view
+                default:
+                    eventsQuery = eventsQuery.Where(e => e.StartDate.Date >= today || (e.EndDate.HasValue && e.EndDate.Value.Date >= today))
+                                           .OrderBy(e => e.StartDate);
+                    ViewData["ListTitle"] = "Közelgő Események";
+                    filter = "upcoming";
                     break;
             }
 
-            ViewBag.CurrentFilter = filter; // Pass current filter to the view for button active states
-
-            // Basic Pagination Logic
             var totalEvents = await eventsQuery.CountAsync();
             var eventsToList = await eventsQuery.Skip((page - 1) * PageSize)
                                              .Take(PageSize)
                                              .ToListAsync();
 
+            ViewBag.CurrentFilter = filter;
             ViewBag.TotalEvents = totalEvents;
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = PageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalEvents / PageSize);
-            if (ViewBag.TotalPages == 0 && totalEvents > 0) ViewBag.TotalPages = 1; // Handle case with less than PageSize items
 
-            return View(eventsToList); // Pass the list of Event objects to the view
+            return View(eventsToList);
         }
 
         // GET: Events/Details/{slug}
-        // Displays the details of a single event using its slug
+        // No changes were needed for this action.
         public async Task<IActionResult> Details(string slug)
         {
             if (string.IsNullOrEmpty(slug))
             {
-                // Consider logging this bad request
                 return BadRequest("Event slug cannot be empty.");
             }
 
@@ -79,49 +83,87 @@ namespace Nadasdladany.Controllers
 
             if (eventItem == null)
             {
-                // Consider logging this occurrence
                 TempData["ErrorMessage"] = "A keresett esemény nem található vagy nem publikus.";
-                return RedirectToAction(nameof(Index)); // Or return a specific NotFound view
-                // return NotFound(); // Simple NotFound page
+                return RedirectToAction(nameof(Index));
             }
 
             ViewData["Title"] = eventItem.Title;
-            return View(eventItem); // Pass the single Event object to the Details view
+            return View(eventItem);
         }
 
-        // --- Admin Actions for Events (Example Stubs - to be implemented in AdminController or AdminEventsController) ---
-        // These would typically be in a separate Admin controller, secured with [Authorize]
 
-        /*
-        // GET: AdminEvents/Create
-        public IActionResult Create()
-        {
-            return View(); // An admin view with a form to create an event
-        }
-
-        // POST: AdminEvents/Create
+        // --- NEW ACTION FOR HANDLING THE 'ADD EVENT' MODAL FORM ---
         [HttpPost]
+        [Authorize(Roles = "Administrator")] // Secures the endpoint
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,StartDate,EndDate,Location,IsAllDay,Organizer,ContactInfo,EventUrl,IsPublished,Slug")] Event eventItem)
+        public async Task<IActionResult> Create(CreateEventViewModel model)
         {
+            // The IsAllDay checkbox only sends a value if it's checked ('true'), not 'false' if unchecked.
+            // We ensure it has a value.
+            if (!ModelState.ContainsKey(nameof(model.IsAllDay)))
+            {
+                model.IsAllDay = false;
+            }
+
             if (ModelState.IsValid)
             {
-                // Generate slug if empty and title is provided
-                if (string.IsNullOrEmpty(eventItem.Slug) && !string.IsNullOrEmpty(eventItem.Title))
+                // Create a new Event database model from the incoming ViewModel
+                var newEvent = new Event
                 {
-                    // eventItem.Slug = GenerateSlug(eventItem.Title); // Implement a slug generation utility
-                }
-                _context.Add(eventItem);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Esemény sikeresen létrehozva!";
-                return RedirectToAction(nameof(Index), new { controller = "Events" }); // Redirect to public events list or an admin list
-            }
-            return View(eventItem); // Return to form with validation errors
-        }
-        */
+                    Title = model.Title,
+                    Description = model.Description,
+                    StartDate = model.StartDate,
+                    EndDate = model.EndDate,
+                    Location = model.Location,
+                    IsAllDay = model.IsAllDay,
+                    Organizer = model.Organizer,
+                    EventUrl = model.EventUrl,
+                    IsPublished = true, // Default to published
+                    Slug = await GenerateUniqueSlug(model.Title, model.StartDate) // Generate a unique slug
+                };
 
-        // TODO: Add Edit (GET & POST), Delete (GET & POST) actions for admin management
-        // TODO: Implement a slug generation utility function if needed
+                _context.Events.Add(newEvent);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Az esemény sikeresen létrehozva!";
+                return RedirectToAction(nameof(Index), new { filter = "upcoming" });
+            }
+
+            // If model validation fails, compile the errors and show them to the user.
+            var errorList = ModelState.Values
+                                .SelectMany(v => v.Errors)
+                                .Select(e => e.ErrorMessage)
+                                .ToList();
+            TempData["ErrorMessage"] = "Hiba történt a mentés során: " + string.Join(" ", errorList);
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --- HELPER METHOD TO CREATE A UNIQUE URL-FRIENDLY SLUG ---
+        private async Task<string> GenerateUniqueSlug(string phrase, DateTime date)
+        {
+            if (string.IsNullOrWhiteSpace(phrase))
+                // Fallback for empty title, though it's required by the model
+                return Guid.NewGuid().ToString();
+
+            // 1. Basic Slug Generation
+            string str = phrase.ToLowerInvariant().Trim();
+            str = str.Replace('á', 'a').Replace('é', 'e').Replace('í', 'i').Replace('ó', 'o').Replace('ö', 'o').Replace('ő', 'o').Replace('ú', 'u').Replace('ü', 'u').Replace('ű', 'u');
+            str = Regex.Replace(str, @"[^a-z0-9\s-]", "");    // Remove invalid chars
+            str = Regex.Replace(str, @"\s+", "-");              // Convert spaces to hyphens
+            str = Regex.Replace(str, @"-+", "-");                // Replace multiple hyphens with a single one
+            str = $"{str}-{date:yyyy-MM-dd}";                   // Append date for better uniqueness
+
+            // 2. Ensure Slug is Unique
+            var originalSlug = str;
+            int i = 1;
+            // Check the database to see if a slug already exists
+            while (await _context.Events.AnyAsync(e => e.Slug == str))
+            {
+                // If it exists, append a number and check again
+                str = $"{originalSlug}-{i++}";
+            }
+
+            return str;
+        }
     }
 }
-

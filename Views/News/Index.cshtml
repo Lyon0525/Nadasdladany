@@ -1,11 +1,32 @@
-﻿@model Nadasdladany.ViewModels.NewsIndexViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model Nadasdladany.ViewModels.NewsIndexViewModel
 
 @{
-    // ViewData["Title"] is set in the controller
+    ViewData["Title"] = "Hírek";
     var pageTitle = string.IsNullOrEmpty(Model.CurrentCategoryName) ? "Összes Hír" : $"Hírek: {Model.CurrentCategoryName}";
 }
 
 <div class="container mt-4">
+
+    @* This section displays success or error messages after a form submission *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
         <!-- Main Content Area -->
         <div class="col-lg-9">
@@ -19,82 +40,101 @@
                 }
             </header>
 
-            @if (Model.Articles.Any())
-            {
-                <div class="row g-4">
+            <!-- Grid for News Cards -->
+            <div class="row g-4">
+
+                @*
+                    ADMINISTRATOR "ADD NEWS" CARD
+                    This is now the first item in the grid, styled like a card.
+                    It only appears for logged-in Administrators.
+                *@
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+                {
+                    <div class="col-md-6 d-flex">
+                        <div class="admin-add-card" data-bs-toggle="modal" data-bs-target="#addNewsModal" title="Új hír létrehozása">
+                            <div class="admin-add-button">
+                                <i class="bi bi-plus-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Display existing news articles *@
+                @if (Model.Articles.Any())
+                {
                     @foreach (var article in Model.Articles)
                     {
                         <div class="col-md-6 d-flex">
                             <partial name="_ArticleCard" model="article" />
                         </div>
                     }
-                </div>
-
-                <!-- Pagination -->
-                @if (Model.TotalPages > 1)
-                {
-                    <nav aria-label="Page navigation" class="mt-5">
-                        <ul class="pagination justify-content-center">
-                            @if (Model.HasPreviousPage)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Index"
-                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
-                                       asp-route-page="@(Model.CurrentPage - 1)">Előző</a>
-                                </li>
-                            }
-                            else
-                            {
-                                <li class="page-item disabled">
-                                    <span class="page-link">Előző</span>
-                                </li>
-                            }
-
-                            @for (int i = 1; i <= Model.TotalPages; i++)
-                            {
-                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                    <a class="page-link" asp-action="Index"
-                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
-                                       asp-route-page="@i">@i</a>
-                                </li>
-                            }
-
-                            @if (Model.HasNextPage)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Index"
-                                       asp-route-categorySlug="@Model.CurrentCategorySlug"
-                                       asp-route-page="@(Model.CurrentPage + 1)">Következő</a>
-                                </li>
-                            }
-                            else
-                            {
-                                <li class="page-item disabled">
-                                    <span class="page-link">Következő</span>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
                 }
-            }
-            else
+                else
+                {
+                    @* 
+                        Only show the "No news available" message if the user is NOT an admin.
+                        If they are an admin, the "Add" card is visible, which is sufficient.
+                    *@
+                    @if (!User.IsInRole("Administrator"))
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">Jelenleg nincsenek elérhető hírek ebben a kategóriában.</div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
             {
-                <div class="alert alert-info">
-                    @if (!string.IsNullOrEmpty(Model.CurrentCategoryName))
-                    {
-                        @:Ebben a kategóriában (@Model.CurrentCategoryName) jelenleg nincsenek hírek.
-                    }
-                    else
-                    {
-                        @:Jelenleg nincsenek elérhető hírek.
-                    }
-                </div>
+                <nav aria-label="Page navigation" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                   asp-route-page="@(Model.CurrentPage - 1)">Előző</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">Előző</span>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                   asp-route-page="@i">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-categorySlug="@Model.CurrentCategorySlug"
+                                   asp-route-page="@(Model.CurrentPage + 1)">Következő</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">Következő</span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
             }
         </div>
 
         <!-- Sidebar for Categories -->
         <div class="col-lg-3">
-            <aside class="sticky-top" style="top: 80px;"> @* Adjust top for fixed navbar height *@
+            <aside class="sticky-top" style="top: 80px;">
                 <div class="p-3 bg-light shadow-sm rounded mt-4 mt-lg-0">
                     <h4 class="section-title-secondary mb-3"><i class="bi bi-tags-fill me-2"></i>Kategóriák</h4>
                     @if (Model.Categories.Any())
@@ -124,3 +164,68 @@
         </div>
     </div>
 </div>
+
+
+@*
+    "ADD NEWS" MODAL
+    This HTML structure remains the same at the bottom of the file.
+    It's hidden by default and is only included in the page for administrators.
+*@
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <div class="modal fade" id="addNewsModal" tabindex="-1" aria-labelledby="addNewsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="News" asp-action="Create" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNewsModalLabel">Új hír létrehozása</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="Title" class="form-label">Cím</label>
+                            <input type="text" id="Title" name="Title" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Content" class="form-label">Teljes tartalom</label>
+                            <textarea id="Content" name="Content" class="form-control" rows="10" required></textarea>
+                            <div class="form-text">Használhatsz HTML tageket a formázáshoz.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Excerpt" class="form-label">Rövid kivonat (opcionális)</label>
+                            <textarea id="Excerpt" name="Excerpt" class="form-control" rows="3"></textarea>
+                            <div class="form-text">Ez a szöveg jelenik meg a hírkártyán. Ha üresen hagyod, a rendszer automatikusan generálja a fő tartalomból.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="CategoryId" class="form-label">Kategória</label>
+                                <select id="CategoryId" name="CategoryId" class="form-select" required>
+                                    <option value="">Válassz kategóriát...</option>
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="FeaturedImageUrl" class="form-label">Kiemelt kép URL (opcionális)</label>
+                                <input type="url" id="FeaturedImageUrl" name="FeaturedImageUrl" class="form-control">
+                                <div class="form-text">Pl: /img/hirek/kep-neve.jpg</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                        <button type="submit" class="btn btn-primary">Hír közzététele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -262,7 +262,7 @@ namespace Nadasdladany.Data
                     Email = "polgarmester@nadasdladany.hu",
                     PhoneNumber = "+36 (30) 111-2233",
                     ReceptionHoursInfo = "Minden hónap első szerdáján 14:00-16:00 (Előzetes bejelentkezés szükséges)",
-                    ImageUrl = "/images/representatives/mayor-varga-tunde.jpg", // Placeholder
+                    ImageUrl = "/img/mayor-placeholder.png", // Placeholder
                     Biography = "<p>Tisztelt Nádasdladányiak! Polgármesterként legfőbb célom községünk fejlődése és közösségünk erősítése. Nyitott ajtókkal várom Önöket!</p>",
                     IsPublished = true,
                     DisplayOrder = 1

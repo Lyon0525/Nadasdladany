@@ -1,27 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nadasdladany.Data;
-using Nadasdladany.Models;
+using Nadasdladany.Models; 
 using Nadasdladany.ViewModels;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Nadasdladany.Controllers
 {
     public class NewsController : Controller
     {
+        // Your DbContext, plus Logger and the new UserManager
         private readonly NadasdladanyDbContext _context;
         private readonly ILogger<NewsController> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public NewsController(NadasdladanyDbContext context, ILogger<NewsController> logger)
+        // UPDATED CONSTRUCTOR: Added UserManager for handling user-related actions
+        public NewsController(
+            NadasdladanyDbContext context,
+            ILogger<NewsController> logger,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _logger = logger;
+            _userManager = userManager;
         }
 
         // GET: News
         // GET: News/Category/{categorySlug}
+        // THIS ACTION REMAINS THE SAME. It provides the data for the view, including categories for the modal.
         public async Task<IActionResult> Index(string? categorySlug = null, int page = 1)
         {
-            int pageSize = 6; // Number of articles per page
+            int pageSize = 6;
             ViewData["Title"] = "Hírek";
 
             IQueryable<Article> articlesQuery = _context.Articles
@@ -42,10 +54,7 @@ namespace Nadasdladany.Controllers
                 }
                 else
                 {
-                    // Category slug provided but not found, maybe show all news or a not found message
                     _logger.LogWarning("Category with slug '{CategorySlug}' not found.", categorySlug);
-                    // Optionally, redirect to the main news page or return NotFound()
-                    // For now, we'll just ignore the filter and show all news.
                 }
             }
 
@@ -75,6 +84,7 @@ namespace Nadasdladany.Controllers
         }
 
         // GET: News/Details/{slug}
+        // THIS ACTION REMAINS THE SAME.
         public async Task<IActionResult> Details(string slug)
         {
             if (string.IsNullOrEmpty(slug))
@@ -93,12 +103,81 @@ namespace Nadasdladany.Controllers
                 return NotFound($"A '{slug}' azonosítójú cikk nem található vagy nem publikus.");
             }
 
-            // Optional: Increment view count (simple version, not protected against multiple refreshes by same user in short time)
-            // article.ViewCount++;
-            // await _context.SaveChangesAsync();
-
             ViewData["Title"] = article.Title;
             return View(article);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        // KEY CHANGE #2: The action now accepts the ViewModel, not the database model
+        public async Task<IActionResult> Create(CreateArticleViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                // Manually create the Article object from the valid ViewModel
+                var newArticle = new Article
+                {
+                    Title = model.Title,
+                    Content = model.Content,
+                    Excerpt = model.Excerpt,
+                    FeaturedImageUrl = model.FeaturedImageUrl,
+                    CategoryId = model.CategoryId,
+                    Slug = GenerateSlug(model.Title), // Generate slug here
+                    Author = user?.UserName ?? "Adminisztrátor",
+                    IsPublished = true, // Default to published
+                    PublishedDate = DateTime.UtcNow,
+                    LastModifiedDate = DateTime.UtcNow
+                };
+
+                // Auto-generate excerpt if it was left blank
+                if (string.IsNullOrWhiteSpace(newArticle.Excerpt) && !string.IsNullOrWhiteSpace(newArticle.Content))
+                {
+                    var plainText = Regex.Replace(newArticle.Content, "<.*?>", string.Empty);
+                    newArticle.Excerpt = plainText.Length <= 200 ? plainText : plainText.Substring(0, 200) + "...";
+                }
+
+                _context.Articles.Add(newArticle);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Hír sikeresen hozzáadva!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // If we get here, something failed. Let's provide a more detailed error.
+            // This builds a string of all validation errors.
+            var errorList = ModelState.Values
+                                .SelectMany(v => v.Errors)
+                                .Select(e => e.ErrorMessage)
+                                .ToList();
+            TempData["ErrorMessage"] = "Hiba történt a mentés során: " + string.Join(" ", errorList);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --- HELPER METHOD TO GENERATE A URL-FRIENDLY SLUG ---
+        private string GenerateSlug(string phrase)
+        {
+            if (string.IsNullOrEmpty(phrase))
+                return string.Empty;
+
+            string str = phrase.ToLowerInvariant();
+
+            // Basic replacements for Hungarian characters
+            str = str.Replace('á', 'a').Replace('é', 'e').Replace('í', 'i').Replace('ó', 'o').Replace('ö', 'o').Replace('ő', 'o').Replace('ú', 'u').Replace('ü', 'u').Replace('ű', 'u');
+
+            // Remove invalid characters
+            str = Regex.Replace(str, @"[^a-z0-9\s-]", "");
+            // Convert multiple spaces into one space
+            str = Regex.Replace(str, @"\s+", " ").Trim();
+            // Replace spaces with hyphens
+            str = Regex.Replace(str, @"\s", "-");
+
+            // Prevent multiple consecutive hyphens
+            str = Regex.Replace(str, @"-+", "-");
+
+            return str;
         }
     }
 }

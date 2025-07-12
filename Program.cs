@@ -38,7 +38,7 @@ namespace Nadasdladany
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = true;
+                options.Cookie.HttpOnly = false;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30); // How long the login session is valid
                 options.LoginPath = "/Account/Login";       // Path to your login page
                 options.LogoutPath = "/Account/Logout";     // Path to your logout action
@@ -69,7 +69,6 @@ namespace Nadasdladany
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
             else
@@ -104,8 +103,8 @@ namespace Nadasdladany
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             string adminRoleName = "Administrator";
-            string adminEmail = "admin@nadasdladany.hu"; // CHANGE THIS
-            string adminPassword = "Password123!";      // CHANGE THIS TO A STRONG PASSWORD - store securely or set via config for first run
+            string adminEmail = "admin@nadasdladany.hu"; 
+            string adminPassword = "Password123!";      
 
             // Ensure Administrator role exists
             if (!await roleManager.RoleExistsAsync(adminRoleName))
