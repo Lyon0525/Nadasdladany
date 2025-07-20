@@ -8,9 +8,8 @@ namespace Nadasdladany.ViewModels
         public IEnumerable<Category> Categories { get; set; } = new List<Category>();
 
         public string? CurrentCategorySlug { get; set; }
-        public string? CurrentCategoryName { get; set; } // To display the name of the selected category
+        public string? CurrentCategoryName { get; set; } 
 
-        // Pagination properties
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public bool HasPreviousPage => CurrentPage > 1;

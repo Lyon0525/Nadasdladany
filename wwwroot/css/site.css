@@ -94,6 +94,9 @@ body {
     margin-bottom: 1rem;
 }
 
+.news-card {
+    width: 100%;
+}
 
 .news-card img.card-img-top {
     height: 200px;
@@ -425,20 +428,123 @@ body {
 
 /* This is the green plus button circle */
 .admin-add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 70px;
     height: 70px;
     border-radius: 50%;
     background-color: #28a745;
     color: white;
     font-size: 2.5rem;
-    line-height: 1;
     border: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    /* We need to make sure the button itself doesn't steal clicks from the modal toggle */
-    pointer-events: none;
+    /* We don't need pointer-events: none here because the whole card is the link */
 }
 
 .admin-add-card:hover .admin-add-button {
     transform: scale(1.1);
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.5);
 }
+
+/* --- Admin Controls on Cards --- */
+.card-admin-container {
+    position: relative;
+    /* This makes the container a reference for the absolutely positioned buttons */
+}
+
+.card-admin-controls {
+    position: absolute;
+    /* CHANGE: Replaced 'top' with 'bottom' */
+    bottom: 15px;
+    right: 15px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+}
+
+.admin-card-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .admin-card-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .admin-card-btn.btn-edit {
+        background-color: #ffc107; /* Bootstrap's warning/yellow color */
+    }
+
+    .admin-card-btn.btn-delete {
+        background-color: #dc3545; /* Bootstrap's danger/red color */
+    }
+
+/* Add spacing in the card footer to prevent buttons from overlapping the date */
+.card-admin-container .card-footer {
+    padding-right: 100px; /* Provides space for the two buttons */
+}
+
+/* Alternative if you don't use a footer */
+.card-admin-container .card-body {
+    padding-bottom: 50px; /* Add extra space at the bottom of the card body */
+}
+
+/* 3. A robust rule to ensure images look good and don't stretch. */
+.card .card-img-top.news-card-img {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.card-add-new {
+    border: 3px dashed #ced4da; /* Subtle grey dash */
+    background-color: #f8f9fa;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    width: 100%;
+}
+
+    .card-add-new:hover {
+        background-color: #e9f5ec;
+        border-color: #28a745;
+    }
+
+        .card-add-new:hover .admin-add-button {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.5);
+        }
+
+.card-add-new .admin-add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #28a745;
+    color: white;
+    font-size: 2.5rem;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    pointer-events: none;
+}
+
+.d-flex > .card {
+    display: flex;
+    flex-direction: column;
+}
+
+    .d-flex > .card > .card-body {
+        flex-grow: 1; /* Shorthand 'flex: 1;' also works */
+    }

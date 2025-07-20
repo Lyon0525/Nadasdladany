@@ -15,7 +15,6 @@ namespace Nadasdladany.ViewModels
         public string? Excerpt { get; set; }
 
         [StringLength(255)]
-        [Display(Name = "Featured Image URL")]
         public string? FeaturedImageUrl { get; set; }
 
         [Required(ErrorMessage = "Kategória kiválasztása kötelező.")]

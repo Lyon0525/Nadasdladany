@@ -156,6 +156,88 @@ namespace Nadasdladany.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditArticleViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // 1. Find the existing article in the database
+                var articleToUpdate = await _context.Articles.FindAsync(model.Id);
+
+                if (articleToUpdate == null)
+                {
+                    TempData["ErrorMessage"] = "A szerkesztendő hír nem található.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // 2. Update its properties with the data from the form
+                articleToUpdate.Title = model.Title;
+                articleToUpdate.Content = model.Content;
+                articleToUpdate.Excerpt = model.Excerpt;
+                articleToUpdate.FeaturedImageUrl = model.FeaturedImageUrl;
+                articleToUpdate.CategoryId = model.CategoryId;
+                articleToUpdate.LastModifiedDate = DateTime.UtcNow; // Update modification date
+
+                // Important: We generally do not change the slug or author on an edit to preserve links.
+                // Regenerate excerpt if it was cleared
+                if (string.IsNullOrWhiteSpace(articleToUpdate.Excerpt) && !string.IsNullOrWhiteSpace(articleToUpdate.Content))
+                {
+                    var plainText = Regex.Replace(articleToUpdate.Content, "<.*?>", string.Empty);
+                    articleToUpdate.Excerpt = plainText.Length <= 200 ? plainText : plainText.Substring(0, 200) + "...";
+                }
+
+                try
+                {
+                    // 3. Save the changes
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Hír sikeresen frissítve!";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    TempData["ErrorMessage"] = "Hiba történt a frissítés során. Kérjük, próbálja újra.";
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // If model state is invalid, show an error
+            TempData["ErrorMessage"] = "Hiba történt a mentés során. Ellenőrizze a megadott adatokat.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --- NEW ACTION FOR DELETING AN ARTICLE ---
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            // 1. Find the article to delete
+            var articleToDelete = await _context.Articles.FindAsync(id);
+
+            if (articleToDelete == null)
+            {
+                TempData["ErrorMessage"] = "A törlendő hír nem található, vagy már törölve lett.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // 2. Remove it and save changes
+                _context.Articles.Remove(articleToDelete);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"A(z) \"{articleToDelete.Title}\" című hír sikeresen törölve lett.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting article with ID {ArticleId}", id);
+                TempData["ErrorMessage"] = "Hiba történt a törlés során. Kérjük, próbálja újra.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         // --- HELPER METHOD TO GENERATE A URL-FRIENDLY SLUG ---
         private string GenerateSlug(string phrase)
         {
