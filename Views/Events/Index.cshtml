@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using System.Globalization
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -47,12 +48,7 @@
         </div>
     }
 
-    <!-- Main Grid for Event Cards -->
     <div class="row g-4">
-        @*
-            ADMINISTRATOR "ADD EVENT" CARD
-            This card is the first item in the grid and is only visible to administrators.
-        *@
         @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
         {
             <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
@@ -67,7 +63,31 @@
             @foreach (var ev in Model)
             {
                 <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
-                    <div class="card event-card h-100 shadow-sm w-100">
+                    <div class="card event-card h-100 shadow-sm w-100 card-admin-container">
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+                        {
+                            <div class="card-admin-controls">
+                                <button type="button" class="admin-card-btn btn-edit" title="Esemény szerkesztése"
+                                        data-bs-toggle="modal" data-bs-target="#editEventModal"
+                                        data-event-id="@ev.Id"
+                                        data-event-title="@ev.Title"
+                                        data-event-description="@ev.Description"
+                                        data-event-startdate="@ev.StartDate.ToString("yyyy-MM-ddTHH:mm")"
+                                        data-event-enddate="@(ev.EndDate?.ToString("yyyy-MM-ddTHH:mm"))"
+                                        data-event-location="@ev.Location"
+                                        data-event-organizer="@ev.Organizer"
+                                        data-event-eventurl="@ev.EventUrl"
+                                        data-event-isallday="@ev.IsAllDay.ToString().ToLower()">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="admin-card-btn btn-delete" title="Esemény törlése"
+                                        data-bs-toggle="modal" data-bs-target="#deleteEventModal"
+                                        data-event-id="@ev.Id"
+                                        data-event-title="@ev.Title">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        }
                         <div class="card-header event-card-header text-white @(ev.StartDate.Date >= DateTime.UtcNow.Date || (ev.EndDate.HasValue && ev.EndDate.Value.Date >= DateTime.UtcNow.Date) ? "bg-primary" : "bg-secondary")">
                             <div class="event-date fw-bold">
                                 <i class="bi bi-calendar-week me-2"></i>
@@ -214,10 +234,6 @@
     }
 </style>
 
-@*
-    "ADD EVENT" MODAL
-    This is hidden by default and only included if the user is an Administrator.
-*@
 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
 {
     <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
@@ -281,4 +297,100 @@
             </div>
         </div>
     </div>
+    @* --- "EDIT EVENT" MODAL (NEW) --- *@
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="Events" asp-action="Edit" method="post">
+                    <div class="modal-header"><h5 class="modal-title" id="editEventModalLabel">Esemény szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="editEventId" name="Id" />
+                        <div class="mb-3"><label for="editEventTitle" class="form-label fw-bold">Esemény címe</label><input type="text" id="editEventTitle" name="Title" class="form-control" required></div>
+                        <div class="mb-3"><label for="editEventDescription" class="form-label">Leírás</label><textarea id="editEventDescription" name="Description" class="form-control" rows="5"></textarea></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label for="editEventStartDate" class="form-label fw-bold">Kezdés</label><input type="datetime-local" id="editEventStartDate" name="StartDate" class="form-control" required></div><div class="col-md-6 mb-3"><label for="editEventEndDate" class="form-label">Befejezés</label><input type="datetime-local" id="editEventEndDate" name="EndDate" class="form-control"></div></div>
+                        <div class="mb-3"><label for="editEventLocation" class="form-label">Helyszín</label><input type="text" id="editEventLocation" name="Location" class="form-control"></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label for="editEventOrganizer" class="form-label">Szervező</label><input type="text" id="editEventOrganizer" name="Organizer" class="form-control"></div><div class="col-md-6 mb-3"><label for="editEventEventUrl" class="form-label">Weboldal (URL)</label><input type="url" id="editEventEventUrl" name="EventUrl" class="form-control"></div></div>
+                        <div class="form-check mb-3"><input type="checkbox" id="editEventIsAllDay" name="IsAllDay" value="true" class="form-check-input"><label class="form-check-label" for="editEventIsAllDay">Egész napos</label></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* --- "DELETE CONFIRMATION" MODAL (NEW) --- *@
+    <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Events" asp-action="Delete" method="post">
+                    <div class="modal-header"><h5 class="modal-title" id="deleteEventModalLabel">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteEventId" name="Id" />
+                        <p>Biztosan törölni szeretné a következő eseményt? <br /><strong id="deleteEventTitle"></strong></p>
+                        <p class="text-danger">A művelet nem vonható vissza!</p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Helper function to strip HTML tags for simple text areas
+            function stripHtml(html) {
+                if (!html) return "";
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = html;
+                return tempDiv.textContent || tempDiv.innerText || "";
+            }
+
+            // --- Logic for the EDIT modal ---
+            var editModal = document.getElementById('editEventModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    // Extract data from attributes
+                    var id = button.getAttribute('data-event-id');
+                    var title = button.getAttribute('data-event-title');
+                    var description = button.getAttribute('data-event-description');
+                    var startDate = button.getAttribute('data-event-startdate');
+                    var endDate = button.getAttribute('data-event-enddate');
+                    var location = button.getAttribute('data-event-location');
+                    var organizer = button.getAttribute('data-event-organizer');
+                    var eventUrl = button.getAttribute('data-event-eventurl');
+                    var isAllDay = button.getAttribute('data-event-isallday') === 'true';
+
+                    // Populate form fields
+                    editModal.querySelector('#editEventId').value = id;
+                    editModal.querySelector('#editEventTitle').value = title;
+                    editModal.querySelector('#editEventDescription').value = stripHtml(description); // Clean description
+                    editModal.querySelector('#editEventStartDate').value = startDate;
+                    editModal.querySelector('#editEventEndDate').value = endDate;
+                    editModal.querySelector('#editEventLocation').value = location;
+                    editModal.querySelector('#editEventOrganizer').value = organizer;
+                    editModal.querySelector('#editEventEventUrl').value = eventUrl;
+                    editModal.querySelector('#editEventIsAllDay').checked = isAllDay;
+                });
+            }
+
+            // --- Logic for the DELETE confirmation modal ---
+            var deleteModal = document.getElementById('deleteEventModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var id = button.getAttribute('data-event-id');
+                    var title = button.getAttribute('data-event-title');
+
+                    deleteModal.querySelector('#deleteEventId').value = id;
+                    deleteModal.querySelector('#deleteEventTitle').textContent = title;
+                });
+            }
+        });
+    </script>
 }

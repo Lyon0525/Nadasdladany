@@ -17,6 +17,13 @@ namespace Nadasdladany.ViewModels
         [StringLength(255)]
         public string? FeaturedImageUrl { get; set; }
 
+        [Display(Name = "Új Kiemelt Kép Feltöltése")]
+        public IFormFile? FeaturedImageFile { get; set; }
+
+        public string? ExistingImageUrl { get; set; }
+
+        public bool RemoveCurrentImage { get; set; }
+
         [Required(ErrorMessage = "Kategória kiválasztása kötelező.")]
         [Range(1, int.MaxValue, ErrorMessage = "Érvényes kategóriát kell kiválasztani.")]
         public int CategoryId { get; set; }

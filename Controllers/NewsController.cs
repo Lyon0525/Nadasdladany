@@ -3,29 +3,33 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nadasdladany.Data;
-using Nadasdladany.Models; 
+using Nadasdladany.Models;
 using Nadasdladany.ViewModels;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace Nadasdladany.Controllers
 {
     public class NewsController : Controller
     {
-        // Your DbContext, plus Logger and the new UserManager
         private readonly NadasdladanyDbContext _context;
         private readonly ILogger<NewsController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment; // ADDED: To get wwwroot path
 
-        // UPDATED CONSTRUCTOR: Added UserManager for handling user-related actions
+        // UPDATED CONSTRUCTOR to include IWebHostEnvironment
         public NewsController(
             NadasdladanyDbContext context,
             ILogger<NewsController> logger,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _logger = logger;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: News
@@ -106,37 +110,34 @@ namespace Nadasdladany.Controllers
             ViewData["Title"] = article.Title;
             return View(article);
         }
-
         [HttpPost]
         [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
-        // KEY CHANGE #2: The action now accepts the ViewModel, not the database model
         public async Task<IActionResult> Create(CreateArticleViewModel model)
         {
             if (ModelState.IsValid)
             {
+                // Process the uploaded file and get its relative path for the DB
+                string relativeImagePath = await ProcessUploadedFile(model.FeaturedImageFile);
                 var user = await _userManager.GetUserAsync(User);
 
-                // Manually create the Article object from the valid ViewModel
                 var newArticle = new Article
                 {
                     Title = model.Title,
                     Content = model.Content,
                     Excerpt = model.Excerpt,
-                    FeaturedImageUrl = model.FeaturedImageUrl,
+                    FeaturedImageUrl = relativeImagePath, // Store the generated path
                     CategoryId = model.CategoryId,
-                    Slug = GenerateSlug(model.Title), // Generate slug here
+                    Slug = await GenerateUniqueSlug(model.Title),
                     Author = user?.UserName ?? "Adminisztrátor",
-                    IsPublished = true, // Default to published
+                    IsPublished = true,
                     PublishedDate = DateTime.UtcNow,
                     LastModifiedDate = DateTime.UtcNow
                 };
 
-                // Auto-generate excerpt if it was left blank
-                if (string.IsNullOrWhiteSpace(newArticle.Excerpt) && !string.IsNullOrWhiteSpace(newArticle.Content))
+                if (string.IsNullOrWhiteSpace(newArticle.Excerpt))
                 {
-                    var plainText = Regex.Replace(newArticle.Content, "<.*?>", string.Empty);
-                    newArticle.Excerpt = plainText.Length <= 200 ? plainText : plainText.Substring(0, 200) + "...";
+                    newArticle.Excerpt = CreateExcerptFromHtml(newArticle.Content);
                 }
 
                 _context.Articles.Add(newArticle);
@@ -145,14 +146,8 @@ namespace Nadasdladany.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // If we get here, something failed. Let's provide a more detailed error.
-            // This builds a string of all validation errors.
-            var errorList = ModelState.Values
-                                .SelectMany(v => v.Errors)
-                                .Select(e => e.ErrorMessage)
-                                .ToList();
+            var errorList = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             TempData["ErrorMessage"] = "Hiba történt a mentés során: " + string.Join(" ", errorList);
-
             return RedirectToAction(nameof(Index));
         }
 
@@ -163,103 +158,145 @@ namespace Nadasdladany.Controllers
         {
             if (ModelState.IsValid)
             {
-                // 1. Find the existing article in the database
                 var articleToUpdate = await _context.Articles.FindAsync(model.Id);
-
                 if (articleToUpdate == null)
                 {
                     TempData["ErrorMessage"] = "A szerkesztendő hír nem található.";
                     return RedirectToAction(nameof(Index));
                 }
 
-                // 2. Update its properties with the data from the form
+                // Handle image update logic
+                if (model.FeaturedImageFile != null)
+                {
+                    // A new file was uploaded, so delete the old one and save the new one
+                    DeleteExistingImage(articleToUpdate.FeaturedImageUrl);
+                    articleToUpdate.FeaturedImageUrl = await ProcessUploadedFile(model.FeaturedImageFile);
+                }
+                else if (model.RemoveCurrentImage)
+                {
+                    // The "remove" checkbox was ticked, so delete the old image and clear the DB field
+                    DeleteExistingImage(articleToUpdate.FeaturedImageUrl);
+                    articleToUpdate.FeaturedImageUrl = null;
+                }
+                // If neither of the above is true, the existing image is kept.
+
                 articleToUpdate.Title = model.Title;
                 articleToUpdate.Content = model.Content;
                 articleToUpdate.Excerpt = model.Excerpt;
-                articleToUpdate.FeaturedImageUrl = model.FeaturedImageUrl;
                 articleToUpdate.CategoryId = model.CategoryId;
-                articleToUpdate.LastModifiedDate = DateTime.UtcNow; // Update modification date
+                articleToUpdate.LastModifiedDate = DateTime.UtcNow;
 
-                // Important: We generally do not change the slug or author on an edit to preserve links.
-                // Regenerate excerpt if it was cleared
-                if (string.IsNullOrWhiteSpace(articleToUpdate.Excerpt) && !string.IsNullOrWhiteSpace(articleToUpdate.Content))
+                if (string.IsNullOrWhiteSpace(articleToUpdate.Excerpt))
                 {
-                    var plainText = Regex.Replace(articleToUpdate.Content, "<.*?>", string.Empty);
-                    articleToUpdate.Excerpt = plainText.Length <= 200 ? plainText : plainText.Substring(0, 200) + "...";
+                    articleToUpdate.Excerpt = CreateExcerptFromHtml(articleToUpdate.Content);
                 }
 
-                try
-                {
-                    // 3. Save the changes
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Hír sikeresen frissítve!";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    TempData["ErrorMessage"] = "Hiba történt a frissítés során. Kérjük, próbálja újra.";
-                }
-
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Hír sikeresen frissítve!";
                 return RedirectToAction(nameof(Index));
             }
 
-            // If model state is invalid, show an error
             TempData["ErrorMessage"] = "Hiba történt a mentés során. Ellenőrizze a megadott adatokat.";
             return RedirectToAction(nameof(Index));
         }
 
-        // --- NEW ACTION FOR DELETING AN ARTICLE ---
         [HttpPost]
         [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            // 1. Find the article to delete
             var articleToDelete = await _context.Articles.FindAsync(id);
-
             if (articleToDelete == null)
             {
-                TempData["ErrorMessage"] = "A törlendő hír nem található, vagy már törölve lett.";
+                TempData["ErrorMessage"] = "A törlendő hír nem található.";
                 return RedirectToAction(nameof(Index));
+
             }
 
-            try
-            {
-                // 2. Remove it and save changes
-                _context.Articles.Remove(articleToDelete);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"A(z) \"{articleToDelete.Title}\" című hír sikeresen törölve lett.";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting article with ID {ArticleId}", id);
-                TempData["ErrorMessage"] = "Hiba történt a törlés során. Kérjük, próbálja újra.";
-            }
+            // Also delete the associated image file from the server
+            DeleteExistingImage(articleToDelete.FeaturedImageUrl);
+
+            _context.Articles.Remove(articleToDelete);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"A(z) \"{articleToDelete.Title}\" című hír sikeresen törölve lett.";
 
             return RedirectToAction(nameof(Index));
         }
 
-        // --- HELPER METHOD TO GENERATE A URL-FRIENDLY SLUG ---
-        private string GenerateSlug(string phrase)
+        #region Private Helper Methods
+
+        private async Task<string> ProcessUploadedFile(IFormFile file)
         {
-            if (string.IsNullOrEmpty(phrase))
-                return string.Empty;
+            if (file == null || file.Length == 0)
+            {
+                return null; // Return null if no file is uploaded
+            }
+
+            // Define the path to the uploads folder
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "img", "news");
+            // Ensure the directory exists
+            Directory.CreateDirectory(uploadsFolder);
+
+            // Generate a unique filename to prevent overwriting files
+            string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Save the file to the server
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            // Return the relative path to be stored in the database
+            return $"/img/news/{uniqueFileName}";
+        }
+
+        private void DeleteExistingImage(string relativePath)
+        {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return;
+            }
+
+            var fullPath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath.TrimStart('/'));
+            if (System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
+        }
+
+        private string CreateExcerptFromHtml(string content, int maxLength = 200)
+        {
+            if (string.IsNullOrWhiteSpace(content)) return null;
+
+            var plainText = Regex.Replace(content, "<.*?>", string.Empty);
+            if (plainText.Length <= maxLength) return plainText;
+
+            return plainText.Substring(0, maxLength).TrimEnd() + "...";
+        }
+
+        private async Task<string> GenerateUniqueSlug(string phrase)
+        {
+            if (string.IsNullOrEmpty(phrase)) return Guid.NewGuid().ToString();
 
             string str = phrase.ToLowerInvariant();
-
-            // Basic replacements for Hungarian characters
             str = str.Replace('á', 'a').Replace('é', 'e').Replace('í', 'i').Replace('ó', 'o').Replace('ö', 'o').Replace('ő', 'o').Replace('ú', 'u').Replace('ü', 'u').Replace('ű', 'u');
-
-            // Remove invalid characters
             str = Regex.Replace(str, @"[^a-z0-9\s-]", "");
-            // Convert multiple spaces into one space
             str = Regex.Replace(str, @"\s+", " ").Trim();
-            // Replace spaces with hyphens
             str = Regex.Replace(str, @"\s", "-");
-
-            // Prevent multiple consecutive hyphens
             str = Regex.Replace(str, @"-+", "-");
+
+            // Ensure slug is unique by appending a number if it already exists
+            int i = 1;
+            var originalSlug = str;
+            while (await _context.Articles.AnyAsync(a => a.Slug == str))
+            {
+                str = $"{originalSlug}-{i++}";
+            }
 
             return str;
         }
+
+        #endregion
     }
 }
