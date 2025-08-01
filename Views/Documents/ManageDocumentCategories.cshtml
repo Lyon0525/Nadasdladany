@@ -1,0 +1,153 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model IEnumerable<Nadasdladany.Models.DocumentCategory>
+@{
+    ViewData["Title"] = "Dokumentum Kategóriák Kezelése";
+}
+
+<div class="container content-padding">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title-primary">@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Vissza a dokumentumtárba</a>
+            <button class="btn btn-lg btn-success shadow-sm" type="button"
+                    data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <i class="bi bi-plus-circle-fill me-2"></i>Új kategória
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kategória Neve</th>
+                        <th>Leírás</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <td><strong>@category.Name</strong></td>
+                            <td>@category.Description</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                        data-cat-id="@category.Id"
+                                        data-cat-name="@category.Name"
+                                        data-cat-description="@category.Description">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"
+                                        data-cat-id="@category.Id"
+                                        data-cat-name="@category.Name">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <!-- "ADD CATEGORY" MODAL -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Documents" asp-action="CreateCategory" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Új kategória létrehozása</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3"><label class="form-label">Kategória Neve</label><input type="text" name="Name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Leírás (opcionális)</label><textarea name="Description" class="form-control" rows="3"></textarea></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Létrehozás</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "EDIT CATEGORY" MODAL -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Documents" asp-action="EditCategory" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Kategória szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="editCatId" name="Id" />
+                        <div class="mb-3"><label class="form-label">Kategória Neve</label><input type="text" id="editCatName" name="Name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Leírás</label><textarea id="editCatDescription" name="Description" class="form-control" rows="3"></textarea></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Mentés</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "DELETE CATEGORY" MODAL -->
+    <div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Documents" asp-action="DeleteCategory" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteCatId" name="Id" />
+                        <p>Biztosan törölni szeretné a következő kategóriát? <br /><strong id="deleteCatName"></strong></p>
+                        <p class="text-danger fw-bold">Ezt csak akkor teheti meg, ha a kategória nem tartalmaz egyetlen dokumentumot sem!</p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Edit Modal Logic
+            var editModal = document.getElementById('editCategoryModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editCatId').value = button.getAttribute('data-cat-id');
+                    editModal.querySelector('#editCatName').value = button.getAttribute('data-cat-name');
+                    editModal.querySelector('#editCatDescription').value = button.getAttribute('data-cat-description');
+                });
+            }
+
+            // Delete Modal Logic
+            var deleteModal = document.getElementById('deleteCategoryModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteCatId').value = button.getAttribute('data-cat-id');
+                    deleteModal.querySelector('#deleteCatName').textContent = button.getAttribute('data-cat-name');
+                });
+            }
+        });
+    </script>
+}

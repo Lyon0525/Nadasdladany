@@ -1,4 +1,5 @@
-﻿using Nadasdladany.Models;
+﻿using Microsoft.AspNetCore.Http; // ADD THIS for IFormFile
+using Nadasdladany.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Nadasdladany.ViewModels
@@ -14,8 +15,8 @@ namespace Nadasdladany.ViewModels
         [Display(Name = "Beosztás/Szerepkör")]
         public RepresentativeRole Role { get; set; }
 
-        [Display(Name = "Egyéni Cím / Titulus (felülírja a beosztást)")]
         [StringLength(200)]
+        [Display(Name = "Egyéni Cím / Titulus")]
         public string? CustomTitleOverride { get; set; }
 
         [EmailAddress(ErrorMessage = "Érvénytelen email formátum.")]
@@ -27,16 +28,15 @@ namespace Nadasdladany.ViewModels
         [Display(Name = "Telefonszám")]
         public string? PhoneNumber { get; set; }
 
-        [Display(Name = "Fotó URL (pl. /img/reps/kepviselo.jpg)")]
-        [StringLength(255)]
-        public string? ImageUrl { get; set; }
-
         [Display(Name = "Rövid Bemutatkozás")]
         public string? Biography { get; set; }
 
         [Required(ErrorMessage = "A megjelenítési sorrend kötelező.")]
-        [Range(0, 100, ErrorMessage = "A sorrend 0 és 100 között lehet.")]
+        [Range(0, 100)]
         [Display(Name = "Megjelenítési Sorrend")]
-        public int DisplayOrder { get; set; } = 99; // Default to last
+        public int DisplayOrder { get; set; } = 99;
+
+        [Display(Name = "Fotó feltöltése")]
+        public IFormFile? ImageFile { get; set; }
     }
 }

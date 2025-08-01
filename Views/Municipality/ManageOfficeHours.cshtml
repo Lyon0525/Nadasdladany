@@ -1,0 +1,170 @@
+﻿@model IEnumerable<Nadasdladany.Models.OfficeHourEntry>
+@{
+    ViewData["Title"] = "Ügyfélfogadás Kezelése";
+}
+
+@functions {
+    string GetHungarianDayName(DayOfWeek day)
+    {
+        return day switch
+        {
+            DayOfWeek.Monday => "Hétfő",
+            DayOfWeek.Tuesday => "Kedd",
+            DayOfWeek.Wednesday => "Szerda",
+            DayOfWeek.Thursday => "Csütörtök",
+            DayOfWeek.Friday => "Péntek",
+            DayOfWeek.Saturday => "Szombat",
+            DayOfWeek.Sunday => "Vasárnap",
+            _ => day.ToString()
+        };
+    }
+}
+
+<div class="container content-padding">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title-primary">@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="Office" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Vissza a hivatali oldalra</a>
+            <button class="btn btn-lg btn-success shadow-sm" type="button"
+                    data-bs-toggle="modal" data-bs-target="#addHourModal">
+                <i class="bi bi-plus-circle-fill me-2"></i>Új időpont
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sorrend</th>
+                        <th>Nap</th>
+                        <th>Időpont / Leírás</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model)
+                    {
+                        <tr>
+                            <td>@entry.DisplayOrder</td>
+                            <td><strong>@entry.DayOfWeek.ToString()</strong></td>
+                            <td>@entry.TimeDescription</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editHourModal"
+                                        data-hour-id="@entry.Id"
+                                        data-hour-day="@Convert.ToInt32(entry.DayOfWeek)"
+                                        data-hour-desc="@entry.TimeDescription"
+                                        data-hour-order="@entry.DisplayOrder">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteHourModal"
+                                        data-hour-id="@entry.Id"
+                                        data-hour-title="@(entry.DayOfWeek.ToString("G", new System.Globalization.CultureInfo("hu-HU"))) - @entry.TimeDescription">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- "ADD HOUR" MODAL -->
+<div class="modal fade" id="addHourModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Municipality" asp-action="CreateOfficeHour" method="post">
+                <div class="modal-header"><h5 class="modal-title">Új időpont felvétele</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <!-- FIX: The asp-items now uses the standard System.DayOfWeek -->
+                    <div class="mb-3"><label class="form-label">Nap</label><select name="DayOfWeek" class="form-select" asp-items="Html.GetEnumSelectList<DayOfWeek>()" required></select></div>
+                    <div class="mb-3"><label class="form-label">Időpont / Leírás</label><input type="text" name="TimeDescription" class="form-control" placeholder="pl. 8:00 - 16:00" required></div>
+                    <div class="mb-3"><label class="form-label">Megjelenítési Sorrend</label><input type="number" name="DisplayOrder" class="form-control" value="99" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Hozzáadás</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "EDIT HOUR" MODAL -->
+<div class="modal fade" id="editHourModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Municipality" asp-action="EditOfficeHour" method="post">
+                <div class="modal-header"><h5 class="modal-title">Időpont szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editHourId" name="Id" />
+                    <!-- FIX: The asp-items now uses the standard System.DayOfWeek -->
+                    <div class="mb-3"><label class="form-label">Nap</label><select id="editHourDay" name="DayOfWeek" class="form-select" asp-items="Html.GetEnumSelectList<DayOfWeek>()" required></select></div>
+                    <div class="mb-3"><label class="form-label">Időpont / Leírás</label><input type="text" id="editHourDesc" name="TimeDescription" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Megjelenítési Sorrend</label><input type="number" id="editHourOrder" name="DisplayOrder" class="form-control" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Mentés</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "DELETE HOUR" MODAL -->
+<div class="modal fade" id="deleteHourModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Municipality" asp-action="DeleteOfficeHour" method="post">
+                <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteHourId" name="Id" />
+                    <p>Biztosan törölni szeretné a következő időpontot? <br /><strong id="deleteHourTitle"></strong></p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Edit Modal Logic
+            var editModal = document.getElementById('editHourModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editHourId').value = button.getAttribute('data-hour-id');
+                    editModal.querySelector('#editHourDay').value = button.getAttribute('data-hour-day');
+                    editModal.querySelector('#editHourDesc').value = button.getAttribute('data-hour-desc');
+                    editModal.querySelector('#editHourOrder').value = button.getAttribute('data-hour-order');
+                });
+            }
+
+            // Delete Modal Logic
+            var deleteModal = document.getElementById('deleteHourModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteHourId').value = button.getAttribute('data-hour-id');
+                    deleteModal.querySelector('#deleteHourTitle').textContent = button.getAttribute('data-hour-title');
+                });
+            }
+        });
+    </script>
+}

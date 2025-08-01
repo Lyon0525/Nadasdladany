@@ -103,8 +103,8 @@ namespace Nadasdladany
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             string adminRoleName = "Administrator";
-            string adminEmail = "admin@nadasdladany.hu"; 
-            string adminPassword = "Password123!";      
+            string adminEmail = "palfikristof2004.kfpl@gmail.com"; 
+            string adminPassword = "Kristof2004";      
 
             // Ensure Administrator role exists
             if (!await roleManager.RoleExistsAsync(adminRoleName))

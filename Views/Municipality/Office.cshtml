@@ -1,31 +1,50 @@
-﻿@model Nadasdladany.ViewModels.OfficePageViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model Nadasdladany.ViewModels.OfficePageViewModel
 @{
     ViewData["Title"] = Model.OfficeDetails?.OfficeName ?? "Polgármesteri Hivatal";
 }
 
 <div class="container content-padding">
-    <div class="page-header mb-4 text-center reveal-on-scroll">
+    <div class="page-header mb-4 text-center">
         <h1>@Model.OfficeDetails?.OfficeName</h1>
         <p class="lead text-muted-color">Információk a Nádasdladányi Polgármesteri Hivatal működéséről, elérhetőségeiről és ügyfélfogadási rendjéről.</p>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
 
     <div class="row">
         <div class="col-lg-8 offset-lg-2">
             @if (Model.OfficeDetails != null)
             {
-                @if (!string.IsNullOrEmpty(Model.OfficeDetails.AboutOffice))
-                {
-                    <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.1s;">
-                        <div class="card-body">
-                            <h3 class="card-title text-primary"><i class="bi bi-building me-2"></i>A Hivatalról</h3>
-                            @Html.Raw(Model.OfficeDetails.AboutOffice)
-                        </div>
+                <div class="card shadow-sm mb-4 position-relative">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <button class="btn btn-warning btn-sm card-edit-btn" data-bs-toggle="modal" data-bs-target="#editOfficeDetailsModal" data-office-name="@Model.OfficeDetails.OfficeName" data-office-about="@Model.OfficeDetails.AboutOffice" data-office-address="@Model.OfficeDetails.Address" data-office-phone="@Model.OfficeDetails.PhoneNumber" data-office-email="@Model.OfficeDetails.Email" data-office-website="@Model.OfficeDetails.WebsiteUrl" data-office-map="@Model.OfficeDetails.GoogleMapsEmbedUrl"><i class="bi bi-pencil-fill"></i> Szerkesztés</button>
+                    }
+                    <div class="card-body">
+                        <h3 class="card-title text-primary"><i class="bi bi-building me-2"></i>A Hivatalról</h3>
+                        @Html.Raw(Model.OfficeDetails.AboutOffice)
                     </div>
-                }
+                </div>
 
-                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.2s;">
+                <div class="card shadow-sm mb-4 position-relative">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <button class="btn btn-warning btn-sm card-edit-btn" data-bs-toggle="modal" data-bs-target="#editOfficeDetailsModal" data-office-name="@Model.OfficeDetails.OfficeName" data-office-about="@Model.OfficeDetails.AboutOffice" data-office-address="@Model.OfficeDetails.Address" data-office-phone="@Model.OfficeDetails.PhoneNumber" data-office-email="@Model.OfficeDetails.Email" data-office-website="@Model.OfficeDetails.WebsiteUrl" data-office-map="@Model.OfficeDetails.GoogleMapsEmbedUrl"><i class="bi bi-pencil-fill"></i> Szerkesztés</button>
+                    }
                     <div class="card-body">
                         <h3 class="card-title text-primary"><i class="bi bi-telephone-fill me-2"></i>Elérhetőségek</h3>
+                        <!-- FIX: RESTORED CONTACT INFO LIST -->
                         <ul class="list-unstyled">
                             @if (!string.IsNullOrEmpty(Model.OfficeDetails.Address))
                             {
@@ -33,7 +52,7 @@
                             }
                             @if (!string.IsNullOrEmpty(Model.OfficeDetails.PhoneNumber))
                             {
-                                <li><strong>Telefonszám:</strong> @Model.OfficeDetails.PhoneNumber</li>
+                                <li><strong>Telefonszám:</strong> <a href="tel:@Model.OfficeDetails.PhoneNumber.Replace(" ", "")">@Model.OfficeDetails.PhoneNumber</a></li>
                             }
                             @if (!string.IsNullOrEmpty(Model.OfficeDetails.Email))
                             {
@@ -53,9 +72,12 @@
 
                 @if (!string.IsNullOrEmpty(Model.OfficeDetails.GoogleMapsEmbedUrl))
                 {
-                    <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.25s;">
+                    <div class="card shadow-sm mb-4 position-relative">
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <button class="btn btn-warning btn-sm card-edit-btn" data-bs-toggle="modal" data-bs-target="#editOfficeDetailsModal" data-office-name="@Model.OfficeDetails.OfficeName" data-office-about="@Model.OfficeDetails.AboutOffice" data-office-address="@Model.OfficeDetails.Address" data-office-phone="@Model.OfficeDetails.PhoneNumber" data-office-email="@Model.OfficeDetails.Email" data-office-website="@Model.OfficeDetails.WebsiteUrl" data-office-map="@Model.OfficeDetails.GoogleMapsEmbedUrl"><i class="bi bi-pencil-fill"></i> Térkép szerkesztése</button>
+                        }
                         <div class="card-body p-0" style="line-height: 0;">
-                            <!-- p-0 and line-height to remove iframe spacing -->
                             @Html.Raw(Model.OfficeDetails.GoogleMapsEmbedUrl)
                         </div>
                     </div>
@@ -64,16 +86,16 @@
 
             @if (Model.OfficeHours != null && Model.OfficeHours.Any())
             {
-                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.3s;">
+                <div class="card shadow-sm mb-4 position-relative">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <a asp-controller="Municipality" asp-action="ManageOfficeHours" class="btn btn-warning btn-sm card-edit-btn"><i class="bi bi-pencil-fill"></i> Nyitvatartás szerkesztése</a>
+                    }
                     <div class="card-body">
                         <h3 class="card-title text-primary"><i class="bi bi-clock-history me-2"></i>Ügyfélfogadási Rend</h3>
+                        <!-- FIX: RESTORED OFFICE HOURS TABLE -->
                         <table class="table table-striped table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nap</th>
-                                    <th>Időpont</th>
-                                </tr>
-                            </thead>
+                            <thead class="table-light"><tr><th>Nap</th><th>Időpont</th></tr></thead>
                             <tbody>
                                 @foreach (var entry in Model.OfficeHours.OrderBy(oh => oh.DisplayOrder))
                                 {
@@ -90,9 +112,14 @@
 
             @if (Model.KeyStaffMembers != null && Model.KeyStaffMembers.Any())
             {
-                <div class="card shadow-sm mb-4 reveal-on-scroll" style="animation-delay: 0.4s;">
+                <div class="card shadow-sm mb-4 position-relative">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <a asp-controller="Municipality" asp-action="Representatives" class="btn btn-warning btn-sm card-edit-btn"><i class="bi bi-pencil-fill"></i> Munkatársak kezelése</a>
+                    }
                     <div class="card-body">
                         <h3 class="card-title text-primary"><i class="bi bi-people-fill me-2"></i>Fontosabb Munkatársak</h3>
+                        <!-- FIX: RESTORED KEY STAFF LIST -->
                         <ul class="list-unstyled">
                             @foreach (var staff in Model.KeyStaffMembers)
                             {
@@ -116,12 +143,76 @@
         </div>
     </div>
 </div>
+
 <style>
-    /* Ensure iframe from Google Maps is responsive */
     .card-body iframe {
-        width: 100% !important; /* Important to override potential inline styles */
-        min-height: 300px; /* Adjust as needed */
+        width: 100% !important;
+        min-height: 300px;
         height: auto;
         border: 0;
     }
 </style>
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <!-- MODAL for Editing Office Details -->
+    <div class="modal fade" id="editOfficeDetailsModal" tabindex="-1" aria-labelledby="editOfficeDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="Municipality" asp-action="EditOfficeDetails" method="post">
+                    <div class="modal-header"><h5 class="modal-title" id="editOfficeDetailsModalLabel">Hivatali adatok szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <!-- Assuming the OfficeInfo has Id=1 -->
+                        <input type="hidden" name="Id" value="1" />
+
+                        <div class="mb-3"><label for="editOfficeName" class="form-label">Hivatal neve</label><input type="text" id="editOfficeName" name="OfficeName" class="form-control"></div>
+                        <div class="mb-3"><label for="editOfficeAbout" class="form-label">A Hivatalról (leírás)</label><textarea id="editOfficeAbout" name="AboutOffice" class="form-control" rows="5"></textarea></div>
+                        <hr />
+                        <h5 class="mt-3">Elérhetőségek</h5>
+                        <div class="mb-3"><label for="editOfficeAddress" class="form-label">Cím</label><input type="text" id="editOfficeAddress" name="Address" class="form-control"></div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="editOfficePhone" class="form-label">Telefonszám</label><input type="tel" id="editOfficePhone" name="PhoneNumber" class="form-control"></div>
+                            <div class="col-md-6 mb-3"><label for="editOfficeEmail" class="form-label">E-mail</label><input type="email" id="editOfficeEmail" name="Email" class="form-control"></div>
+                        </div>
+                        <div class="mb-3"><label for="editOfficeWebsite" class="form-label">Honlap URL</label><input type="url" id="editOfficeWebsite" name="WebsiteUrl" class="form-control"></div>
+                        <hr />
+                        <h5 class="mt-3">Térkép</h5>
+                        <div class="mb-3"><label for="editOfficeMap" class="form-label">Google Maps beágyazó kód</label><textarea id="editOfficeMap" name="GoogleMapsEmbedUrl" class="form-control" rows="4"></textarea><div class="form-text">Illessze be a teljes "iframe" kódot, amit a Google Maps megosztás funkciója ad.</div></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var officeModal = document.getElementById('editOfficeDetailsModal');
+            if (officeModal) {
+                officeModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    // Extract data from the clicked button's data-* attributes
+                    var name = button.getAttribute('data-office-name');
+                    var about = button.getAttribute('data-office-about');
+                    var address = button.getAttribute('data-office-address');
+                    var phone = button.getAttribute('data-office-phone');
+                    var email = button.getAttribute('data-office-email');
+                    var website = button.getAttribute('data-office-website');
+                    var map = button.getAttribute('data-office-map');
+
+                    // Populate the modal's form fields with the extracted data
+                    officeModal.querySelector('#editOfficeName').value = name;
+                    officeModal.querySelector('#editOfficeAbout').value = about;
+                    officeModal.querySelector('#editOfficeAddress').value = address;
+                    officeModal.querySelector('#editOfficePhone').value = phone;
+                    officeModal.querySelector('#editOfficeEmail').value = email;
+                    officeModal.querySelector('#editOfficeWebsite').value = website;
+                    officeModal.querySelector('#editOfficeMap').value = map;
+                });
+            }
+        });
+    </script>
+}

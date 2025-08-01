@@ -1,57 +1,246 @@
-﻿@model IEnumerable<Nadasdladany.Models.UsefulLink>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!-- FIX: The model is now the comprehensive ViewModel from the controller -->
+@model Nadasdladany.ViewModels.PublicServicesViewModel
 @{
-    ViewData["Title"] = ViewData["Title"] as string ?? "Hasznos Linkek";
-    var categories = ViewBag.LinkCategories as List<string> ?? new List<string>();
-    var currentCategory = ViewBag.CurrentLinkCategory as string;
+    ViewData["Title"] = "Hasznos Linkek";
+    // The list for the filter buttons and modals comes from the ViewModel
+    var categories = Model.AllCategories;
 }
 
 <div class="container content-padding">
-    <div class="page-header mb-4 text-center reveal-on-scroll">
+    <div class="page-header mb-4 text-center">
         <h1>@ViewData["Title"]</h1>
         <p class="lead text-muted-color">Fontos és hasznos hivatkozások gyűjteménye.</p>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     @if (categories.Any())
     {
-        <div class="link-filters text-center mb-4 pb-3 border-bottom reveal-on-scroll" style="animation-delay:0.1s;">
-            <a asp-action="PublicServices" asp-route-category="" class="btn btn-sm @(string.IsNullOrEmpty(currentCategory) ? "btn-primary active-filter" : "btn-outline-primary") me-1 mb-2">Összes Link</a>
+        <div class="link-filters text-center mb-4 pb-3 border-bottom">
+            <a asp-action="PublicServices" asp-route-category="" class="btn btn-sm @(string.IsNullOrEmpty(Model.CurrentCategory) ? "btn-primary" : "btn-outline-primary") me-1 mb-2">Összes Link</a>
             @foreach (var cat in categories)
             {
-                <a asp-action="PublicServices" asp-route-category="@cat" class="btn btn-sm @(currentCategory == cat ? "btn-primary active-filter" : "btn-outline-primary") me-1 mb-2">@cat</a>
+                <a asp-action="PublicServices" asp-route-category="@cat" class="btn btn-sm @(Model.CurrentCategory == cat ? "btn-primary" : "btn-outline-primary") me-1 mb-2">@cat</a>
             }
         </div>
     }
 
-    @if (Model != null && Model.Any())
+    @if (User.IsInRole("Administrator"))
+    {
+        <div class="list-group shadow-sm mb-4">
+            <div class="list-group-item list-group-item-success add-new-link-row p-3"
+                 data-bs-toggle="modal" data-bs-target="#addLinkModal" title="Új link hozzáadása">
+                <h5 class="mb-0 text-center fw-bold">
+                    <i class="bi bi-plus-circle-fill me-2"></i>Új link hozzáadása
+                </h5>
+            </div>
+        </div>
+    }
+
+    @if (Model.GroupedLinks != null && Model.GroupedLinks.Any())
+    {
+        @foreach (var categoryGroup in Model.GroupedLinks)
+        {
+            <div class="mb-5">
+                <h2 class="section-title-secondary">@categoryGroup.Key</h2>
+                <hr class="mt-0 mb-3" />
+                <div class="list-group shadow-sm">
+                    @foreach (var link in categoryGroup.Value)
+                    {
+                        <div class="list-group-item position-relative">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1 link-title">
+                                        <!-- FIX: Changed @Model to @link -->
+                                        <a href="@link.Url" class="stretched-link" target="@(link.OpenInNewTab ? "_blank" : "_self")" rel="noopener noreferrer">
+                                            <i class="bi bi-link-45deg me-2"></i>@link.Title
+                                        </a>
+                                        @if (link.OpenInNewTab)
+                                        {
+                                            <small class="text-muted" style="font-size: 0.8em;"><i class="bi bi-box-arrow-up-right ms-1"></i></small>
+                                        }
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(link.Description))
+                                    {
+                                        <p class="mb-1 small text-muted">@link.Description</p>
+                                    }
+                                </div>
+
+                                @if (User.IsInRole("Administrator"))
+                                {
+                                    <div class="admin-document-controls flex-shrink-0 ms-3" style="position: relative; z-index: 2;">
+                                        <!-- FIX: Changed @Model to @link -->
+                                        <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                                data-bs-toggle="modal" data-bs-target="#editLinkModal"
+                                                data-link-id="@link.Id"
+                                                data-link-title="@link.Title"
+                                                data-link-url="@link.Url"
+                                                data-link-description="@link.Description"
+                                                data-link-category="@link.Category"
+                                                data-link-newtab="@link.OpenInNewTab.ToString().ToLower()">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                                data-bs-toggle="modal" data-bs-target="#deleteLinkModal"
+                                                data-link-id="@link.Id"
+                                                data-link-title="@link.Title">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else if (Model.FilteredLinks != null && Model.FilteredLinks.Any())
     {
         <div class="list-group shadow-sm">
-            @foreach (var link in Model)
+            @foreach (var link in Model.FilteredLinks)
             {
-                <a href="@link.Url" class="list-group-item list-group-item-action reveal-on-scroll"
-                   target="@(link.OpenInNewTab ? "_blank" : "_self")" rel="@(link.OpenInNewTab ? "noopener noreferrer" : "")"
-                   style="animation-delay: @(Model.ToList().IndexOf(link) * 0.03)s;">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1 link-title"><i class="bi bi-link-45deg me-2"></i>@link.Title</h5>
-                        @if (link.OpenInNewTab)
+                <div class="list-group-item position-relative">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1 link-title">
+                                <!-- FIX: Changed @Model to @link -->
+                                <a href="@link.Url" class="stretched-link" target="@(link.OpenInNewTab ? "_blank" : "_self")" rel="noopener noreferrer">
+                                    <i class="bi bi-link-45deg me-2"></i>@link.Title
+                                </a>
+                                @if (link.OpenInNewTab)
+                                {
+                                    <small class="text-muted" style="font-size: 0.8em;"><i class="bi bi-box-arrow-up-right ms-1"></i></small>
+                                }
+                            </h5>
+                            @if (!string.IsNullOrEmpty(link.Description))
+                            {
+                                <p class="mb-1 small text-muted">@link.Description</p>
+                            }
+                        </div>
+
+                        @if (User.IsInRole("Administrator"))
                         {
-                            <small class="text-muted"><i class="bi bi-box-arrow-up-right"></i></small>
+                            <div class="admin-document-controls flex-shrink-0 ms-3" style="position: relative; z-index: 2;">
+                                <!-- FIX: Changed @Model to @link -->
+                                <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editLinkModal"
+                                        data-link-id="@link.Id"
+                                        data-link-title="@link.Title"
+                                        data-link-url="@link.Url"
+                                        data-link-description="@link.Description"
+                                        data-link-category="@link.Category"
+                                        data-link-newtab="@link.OpenInNewTab.ToString().ToLower()">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteLinkModal"
+                                        data-link-id="@link.Id"
+                                        data-link-title="@link.Title">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
                         }
                     </div>
-                    @if (!string.IsNullOrEmpty(link.Description))
-                    {
-                        <p class="mb-1 small link-description text-muted">@link.Description</p>
-                    }
-                </a>
+                </div>
             }
         </div>
     }
     else
     {
-        <div class="alert alert-info mt-4 text-center shadow-sm">
-            <i class="bi bi-info-circle-fill me-2"></i>Nincsenek megjeleníthető linkek a kiválasztott feltételekkel.
-        </div>
+        <div class="alert alert-info mt-4 text-center">Nincsenek megjeleníthető linkek.</div>
     }
 </div>
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <!-- "ADD LINK" MODAL -->
+    <div class="modal fade" id="addLinkModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Links" asp-action="Create" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Új link hozzáadása</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label">Kategória (opcionális)</label>
+                            <input type="text" name="Category" class="form-control" list="existing-categories" placeholder="Pl. Önkormányzat, Szolgáltatók">
+                            <datalist id="existing-categories">
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat"></option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Cím</label><input type="text" name="Title" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">URL</label><input type="url" name="Url" class="form-control" required placeholder="https://pelda.hu"></div>
+                        <div class="mb-3"><label class="form-label">Leírás (opcionális)</label><textarea name="Description" class="form-control" rows="3"></textarea></div>
+                        <div class="mb-3"><label class="form-label">Kategória (opcionális)</label><input type="text" name="Category" class="form-control" placeholder="Pl. Önkormányzat, Szolgáltatók"></div>
+                        <div class="form-check"><input type="checkbox" name="OpenInNewTab" value="true" class="form-check-input" checked><label class="form-check-label">Megnyitás új lapon</label></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Hozzáadás</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "EDIT LINK" MODAL -->
+    <div class="modal fade" id="editLinkModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Links" asp-action="Edit" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Link szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="editLinkId" name="Id" />
+                        <div class="mb-3"><label class="form-label">Cím</label><input type="text" id="editLinkTitle" name="Title" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">URL</label><input type="url" id="editLinkUrl" name="Url" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Leírás</label><textarea id="editLinkDescription" name="Description" class="form-control" rows="3"></textarea></div>
+                        <div class="mb-3"><label class="form-label">Kategória</label><input type="text" id="editLinkCategory" name="Category" class="form-control"></div>
+                        <div class="form-check"><input type="checkbox" id="editLinkNewTab" name="OpenInNewTab" value="true" class="form-check-input"><label class="form-check-label" for="editLinkNewTab">Megnyitás új lapon</label></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "DELETE LINK" MODAL -->
+    <div class="modal fade" id="deleteLinkModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Links" asp-action="Delete" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteLinkId" name="Id" />
+                        <p>Biztosan törölni szeretné a következő linket? <br /><strong id="deleteLinkTitle"></strong></p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
 <style>
     .link-title {
         color: var(--bs-primary);
@@ -61,4 +250,47 @@
     .list-group-item-action:focus .link-title {
         color: var(--primary-color-darker);
     }
+
+    .list-group-item {
+        position: relative;
+    }
+
+    .add-new-link-row {
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+        .add-new-link-row:hover {
+            background-color: var(--bs-success-bg-subtle) !important; /* Uses Bootstrap's subtle green */
+        }
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- EDIT MODAL LOGIC ---
+            var editModal = document.getElementById('editLinkModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editLinkId').value = button.getAttribute('data-link-id');
+                    editModal.querySelector('#editLinkTitle').value = button.getAttribute('data-link-title');
+                    editModal.querySelector('#editLinkUrl').value = button.getAttribute('data-link-url');
+                    editModal.querySelector('#editLinkDescription').value = button.getAttribute('data-link-description');
+                    editModal.querySelector('#editLinkCategory').value = button.getAttribute('data-link-category');
+                    editModal.querySelector('#editLinkNewTab').checked = button.getAttribute('data-link-newtab') === 'true';
+                });
+            }
+
+            // --- DELETE MODAL LOGIC ---
+            var deleteModal = document.getElementById('deleteLinkModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteLinkId').value = button.getAttribute('data-link-id');
+                    deleteModal.querySelector('#deleteLinkTitle').textContent = button.getAttribute('data-link-title');
+                });
+            }
+        });
+    </script>
+}

@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting; // For IWebHostEnvironment to get wwwroot path
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging; // <<--- ADDED THIS USING DIRECTIVE
 using Nadasdladany.Data; // Your DbContext namespace
 using Nadasdladany.Models; // Your Model namespace
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting; // For IWebHostEnvironment to get wwwroot path
+using Nadasdladany.ViewModels;
 using System.IO;                  // For Path.Combine, System.IO.File
-using Microsoft.Extensions.Logging; // <<--- ADDED THIS USING DIRECTIVE
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace NadasdladanyWebApp.MVC.Controllers // Assuming this is your desired controller namespace
 {
@@ -140,5 +143,120 @@ namespace NadasdladanyWebApp.MVC.Controllers // Assuming this is your desired co
                 return RedirectToAction(nameof(Index), new { categorySlug = document.DocumentCategory?.Slug });
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> ManageDocumentCategories()
+        {
+            ViewData["Title"] = "Dokumentum Kategóriák Kezelése";
+            var categories = await _context.DocumentCategories.OrderBy(c => c.Name).ToListAsync();
+            return View(categories);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateCategory(CreateDocumentCategoryViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var category = new DocumentCategory
+                {
+                    Name = model.Name,
+                    Description = model.Description,
+                    Slug = await GenerateUniqueCategorySlug(model.Name)
+                };
+
+                _context.DocumentCategories.Add(category);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Az új kategória sikeresen létrehozva.";
+                return RedirectToAction(nameof(ManageDocumentCategories));
+            }
+            TempData["ErrorMessage"] = "Hiba történt a létrehozás során. A név megadása kötelező.";
+            return RedirectToAction(nameof(ManageDocumentCategories));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditCategory(EditDocumentCategoryViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var categoryToUpdate = await _context.DocumentCategories.FindAsync(model.Id);
+                if (categoryToUpdate == null)
+                {
+                    TempData["ErrorMessage"] = "A szerkesztendő kategória nem található.";
+                    return RedirectToAction(nameof(ManageDocumentCategories));
+                }
+
+                if (categoryToUpdate.Name != model.Name)
+                {
+                    categoryToUpdate.Slug = await GenerateUniqueCategorySlug(model.Name, model.Id);
+                }
+
+                categoryToUpdate.Name = model.Name;
+                categoryToUpdate.Description = model.Description;
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "A kategória adatai sikeresen frissítve.";
+                return RedirectToAction(nameof(ManageDocumentCategories));
+            }
+            TempData["ErrorMessage"] = "Érvénytelen adatok.";
+            return RedirectToAction(nameof(ManageDocumentCategories));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Administrator")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var categoryToDelete = await _context.DocumentCategories
+                                               .Include(c => c.Documents)
+                                               .FirstOrDefaultAsync(c => c.Id == id);
+            if (categoryToDelete == null)
+            {
+                TempData["ErrorMessage"] = "A törlendő kategória nem található.";
+                return RedirectToAction(nameof(ManageDocumentCategories));
+            }
+
+            // SAFETY CHECK: Prevent deleting a category that contains documents.
+            if (categoryToDelete.Documents.Any())
+            {
+                TempData["ErrorMessage"] = $"A(z) \"{categoryToDelete.Name}\" kategória nem törölhető, mert dokumentumokat tartalmaz. Kérjük, előbb helyezze át vagy törölje a dokumentumokat.";
+                return RedirectToAction(nameof(ManageDocumentCategories));
+            }
+
+            _context.DocumentCategories.Remove(categoryToDelete);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "A kategória sikeresen törölve lett.";
+
+            return RedirectToAction(nameof(ManageDocumentCategories));
+        }
+
+        #region Helper Methods
+
+        private async Task<string> GenerateUniqueCategorySlug(string phrase, int? currentId = null)
+        {
+            if (string.IsNullOrWhiteSpace(phrase)) return Guid.NewGuid().ToString();
+
+            string str = phrase.ToLowerInvariant().Trim();
+            // ... (Your standard slug generation logic for Hungarian characters) ...
+            str = str.Replace('á', 'a').Replace('é', 'e').Replace('í', 'i').Replace('ó', 'o').Replace('ö', 'o').Replace('ő', 'o').Replace('ú', 'u').Replace('ü', 'u').Replace('ű', 'u');
+            str = Regex.Replace(str, @"[^a-z0-9\s-]", "");
+            str = Regex.Replace(str, @"\s+", "-");
+            str = Regex.Replace(str, @"-+", "-");
+
+            var originalSlug = str;
+            int i = 1;
+            // Check for uniqueness against the DocumentCategories table
+            while (await _context.DocumentCategories.AnyAsync(c => c.Slug == str && c.Id != currentId))
+            {
+                str = $"{originalSlug}-{i++}";
+            }
+            return str;
+        }
+
+        #endregion
     }
 }

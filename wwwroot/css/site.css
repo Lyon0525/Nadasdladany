@@ -197,8 +197,10 @@ body {
 }
 
 .mayor-image {
-    max-width: 250px; 
-    border: 5px solid #fff; 
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border: 5px solid var(--bs-primary);
 }
 
 .news-card img.card-img-top {
@@ -547,4 +549,22 @@ body {
 
     .d-flex > .card > .card-body {
         flex-grow: 1; /* Shorthand 'flex: 1;' also works */
+    }
+
+
+.card-edit-btn {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    opacity: 0.8;
+}
+
+    .card-edit-btn:hover {
+        opacity: 1;
+        transform: scale(1.05);
     }

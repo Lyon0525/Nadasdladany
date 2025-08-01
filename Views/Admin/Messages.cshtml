@@ -1,0 +1,157 @@
+﻿@model Nadasdladany.ViewModels.AdminMessagesViewModel
+@{
+    ViewData["Title"] = "Felkeresések Megtekintése";
+}
+
+<div class="container content-padding">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title-primary">@ViewData["Title"]</h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="alert alert-info shadow-sm">
+        <h4 class="alert-heading"><i class="bi bi-info-circle-fill me-2"></i>Fontos Információ</h4>
+        <p class="mb-0">
+            Ez az oldal a weboldalon keresztül beérkezett üzenetek megtekintésére szolgál. A válaszadást és a további kommunikációt kérjük, a feladó e-mail címére kattintva, a saját levelezőrendszeréből indítsa el.
+        </p>
+    </div>
+
+    @if (Model.Messages.Any())
+    {
+        <div class="accordion shadow-sm" id="messagesAccordion">
+            @foreach (var message in Model.Messages)
+            {
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading_@message.Id">
+                        <button class="accordion-button @(message.IsRead ? "collapsed" : "")" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_@message.Id" aria-expanded="@(!message.IsRead)" aria-controls="collapse_@message.Id">
+                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                                <span>
+                                    @if (!message.IsRead)
+                                    {
+                                        <span class="badge bg-primary me-2">ÚJ</span>
+                                    }
+                                    <strong>@message.Subject</strong>
+                                    <span class="text-muted ms-2"> - Feladó: @message.Name</span>
+                                </span>
+                                <span class="text-muted small">@message.SubmittedDate.ToString("yyyy. MM. dd. HH:mm")</span>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse_@message.Id" class="accordion-collapse collapse @(!message.IsRead ? "show" : "")" aria-labelledby="heading_@message.Id" data-bs-parent="#messagesAccordion">
+                        <div class="accordion-body">
+                            <p><strong>Feladó neve:</strong> @message.Name</p>
+                            <p><strong>Feladó e-mail címe:</strong> <a href="mailto:@message.Email">@message.Email</a></p>
+                            <hr />
+                            <p style="white-space: pre-wrap;">@message.Message</p>
+                            <hr />
+                            <div class="text-end">
+                                <form asp-action="ToggleMessageReadStatus" asp-controller="Admin" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@message.Id" />
+                                    @if (message.IsRead)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye-slash-fill me-1"></i>Megjelölés olvasatlanként</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-eye-fill me-1"></i>Megjelölés olvasottként</button>
+                                    }
+                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                        data-bs-toggle="modal" data-bs-target="#deleteMessageModal"
+                                        data-message-id="@message.Id"
+                                        data-message-subject="@message.Subject">
+                                    <i class="bi bi-trash-fill me-1"></i>Törlés
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination shadow-sm">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Messages" asp-route-page="@(Model.CurrentPage - 1)">« Előző</a></li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled"><span class="page-link">« Előző</span></li>
+                    }
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")"><a class="page-link" asp-action="Messages" asp-route-page="@i">@i</a></li>
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item"><a class="page-link" asp-action="Messages" asp-route-page="@(Model.CurrentPage + 1)">Következő »</a></li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled"><span class="page-link">Következő »</span></li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info text-center">Nincsenek beérkezett üzenetek.</div>
+    }
+</div>
+
+<div class="modal fade" id="deleteMessageModal" tabindex="-1" aria-labelledby="deleteMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="DeleteMessage" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteMessageModalLabel">Törlés megerősítése</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteMessageId" name="Id" />
+                    <p>Biztosan törölni szeretné a következő üzenetet? <br /><strong id="deleteMessageSubject"></strong></p>
+                    <p class="text-danger fw-bold">A művelet nem vonható vissza!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
+                    <button type="submit" class="btn btn-danger">Igen, törlöm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var deleteModal = document.getElementById('deleteMessageModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var messageId = button.getAttribute('data-message-id');
+                    var messageSubject = button.getAttribute('data-message-subject');
+
+                    deleteModal.querySelector('#deleteMessageId').value = messageId;
+                    deleteModal.querySelector('#deleteMessageSubject').textContent = '"' + messageSubject + '"';
+                });
+            }
+        });
+    </script>
+}

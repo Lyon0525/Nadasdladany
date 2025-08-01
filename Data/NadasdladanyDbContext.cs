@@ -23,7 +23,8 @@ namespace Nadasdladany.Data
         public DbSet<Institution> Institutions { get; set; } 
         public DbSet<GalleryImage> GalleryImages { get; set; }   
         public DbSet<GalleryAlbum> GalleryAlbums { get; set; }
-        public DbSet<UsefulLink> UsefulLinks { get; set; } 
+        public DbSet<UsefulLink> UsefulLinks { get; set; }
+        public DbSet<SiteSetting> SiteSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +50,13 @@ namespace Nadasdladany.Data
             modelBuilder.Entity<Institution>()
                .HasIndex(i => i.Slug)
                .IsUnique(); // Ensure slugs are unique if used for routing
+
+            modelBuilder.Entity<SiteSetting>().HasData(
+                new SiteSetting { SettingKey = "WelcomeTitle", SettingValue = "Tisztelt Látogató!" },
+                new SiteSetting { SettingKey = "WelcomeMessageParagraph1", SettingValue = "Szeretettel köszöntöm Önt Nádasdladány község hivatalos honlapján! Célunk, hogy ezen a felületen keresztül átfogó képet adjunk településünk mindennapjairól, működéséről, valamint lehetőséget biztosítsunk az egyszerű és gyors tájékozódásra." },
+                new SiteSetting { SettingKey = "WelcomeMessageParagraph2", SettingValue = "Böngésszen híreink között, ismerje meg önkormányzatunk munkáját, intézményeinket és fedezze fel Nádasdladány természeti és épített értékeit. Reméljük, hasznos információkkal szolgálhatunk minden kedves érdeklődő számára." },
+                new SiteSetting { SettingKey = "MayorName", SettingValue = "Varga Tünde" }
+            );
 
             // Seed data
             SeedData(modelBuilder);

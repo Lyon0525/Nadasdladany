@@ -1,4 +1,7 @@
-﻿@model IEnumerable<Nadasdladany.Models.Institution>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@model IEnumerable<Nadasdladany.Models.Institution>
 @{
     ViewData["Title"] = "Intézményeink";
 }
@@ -21,10 +24,45 @@
     @if (Model != null && Model.Any())
     {
         <div class="row g-4">
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+            {
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                    <div class="card h-100 card-add-new" data-bs-toggle="modal" data-bs-target="#addInstitutionModal" title="Új intézmény felvétele">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                            <div class="admin-add-button"><i class="bi bi-plus-lg"></i></div>
+                            <span class="d-block mt-3 text-muted fw-bold">Új intézmény felvétele</span>
+                        </div>
+                    </div>
+                </div>
+            }
+
             @foreach (var institution in Model)
             {
                 <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(institution) * 0.05)s;">
-                    <div class="card institution-card h-100 shadow-sm w-100">
+                    <div class="card institution-card h-100 shadow-sm w-100 card-admin-container">
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <div class="card-admin-controls">
+                                <button type="button" class="admin-card-btn btn-edit" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editInstitutionModal"
+                                        data-inst-id="@institution.Id"
+                                        data-inst-name="@institution.Name"
+                                        data-inst-description="@institution.Description"
+                                        data-inst-address="@institution.Address"
+                                        data-inst-phone="@institution.PhoneNumber"
+                                        data-inst-email="@institution.Email"
+                                        data-inst-website="@institution.WebsiteUrl"
+                                        data-inst-imageurl="@institution.ImageUrl">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="admin-card-btn btn-delete" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteInstitutionModal"
+                                        data-inst-id="@institution.Id"
+                                        data-inst-name="@institution.Name">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        }
                         @if (!string.IsNullOrEmpty(institution.ImageUrl))
                         {
                             <a asp-action="Details" asp-controller="Institutions" asp-route-slug="@institution.Slug">
@@ -86,6 +124,74 @@
     }
 </div>
 
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <!-- "ADD INSTITUTION" MODAL -->
+    <div class="modal fade" id="addInstitutionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="Institutions" asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div class="modal-header"><h5 class="modal-title">Új intézmény felvétele</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3"><label class="form-label fw-bold">Név</label><input type="text" name="Name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Leírás</label><textarea name="Description" class="form-control" rows="4"></textarea></div>
+                        <hr />
+                        <div class="mb-3"><label class="form-label">Cím</label><input type="text" name="Address" class="form-control"></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Telefonszám</label><input type="tel" name="PhoneNumber" class="form-control"></div><div class="col-md-6 mb-3"><label class="form-label">E-mail</label><input type="email" name="Email" class="form-control"></div></div>
+                        <div class="mb-3"><label class="form-label">Weboldal (URL)</label><input type="url" name="WebsiteUrl" class="form-control"></div>
+                        <div class="mb-3"><label class="form-label">Kép feltöltése (opcionális)</label><input type="file" name="ImageFile" class="form-control" accept="image/*"></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Mentés</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "EDIT INSTITUTION" MODAL -->
+    <div class="modal fade" id="editInstitutionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form asp-controller="Institutions" asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div class="modal-header"><h5 class="modal-title">Intézmény szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="editInstId" name="Id" />
+                        <div class="mb-3"><label class="form-label fw-bold">Név</label><input type="text" id="editInstName" name="Name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Leírás</label><textarea id="editInstDescription" name="Description" class="form-control" rows="4"></textarea></div>
+                        <hr />
+                        <div class="mb-3"><label class="form-label">Cím</label><input type="text" id="editInstAddress" name="Address" class="form-control"></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Telefonszám</label><input type="tel" id="editInstPhone" name="PhoneNumber" class="form-control"></div><div class="col-md-6 mb-3"><label class="form-label">E-mail</label><input type="email" id="editInstEmail" name="Email" class="form-control"></div></div>
+                        <div class="mb-3"><label class="form-label">Weboldal (URL)</label><input type="url" id="editInstWebsite" name="WebsiteUrl" class="form-control"></div>
+                        <div class="mb-3"><label class="form-label">Új kép feltöltése</label><input type="file" name="ImageFile" class="form-control" accept="image/*"></div>
+                        <div id="instImagePreviewContainer" style="display:none;" class="border-top pt-3 mt-3"><label class="form-label">Jelenlegi kép:</label><div><img id="instImagePreview" src="" style="max-height: 100px;" /></div><div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="RemoveCurrentImage" value="true" id="instRemoveImageCheckbox"><label class="form-check-label" for="instRemoveImageCheckbox">Jelenlegi kép törlése</label></div></div>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- "DELETE INSTITUTION" MODAL -->
+    <div class="modal fade" id="deleteInstitutionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Institutions" asp-action="Delete" method="post">
+                    <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteInstId" name="Id" />
+                        <p>Biztosan törölni szeretné a következő intézményt? <br /><strong id="deleteInstName"></strong></p>
+                        <p class="text-danger fw-bold">A művelet nem vonható vissza!</p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
 <style>
     .institution-card-img {
         height: 180px; /* Adjusted */
@@ -117,3 +223,47 @@
         min-height: calc(0.85rem * 1.4 * 3); /* Approx height for 3 lines */
     }
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- EDIT MODAL LOGIC ---
+            var editModal = document.getElementById('editInstitutionModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editInstId').value = button.getAttribute('data-inst-id');
+                    editModal.querySelector('#editInstName').value = button.getAttribute('data-inst-name');
+                    editModal.querySelector('#editInstDescription').value = button.getAttribute('data-inst-description');
+                    editModal.querySelector('#editInstAddress').value = button.getAttribute('data-inst-address');
+                    editModal.querySelector('#editInstPhone').value = button.getAttribute('data-inst-phone');
+                    editModal.querySelector('#editInstEmail').value = button.getAttribute('data-inst-email');
+                    editModal.querySelector('#editInstWebsite').value = button.getAttribute('data-inst-website');
+
+                    var imageUrl = button.getAttribute('data-inst-imageurl');
+                    var previewContainer = editModal.querySelector('#instImagePreviewContainer');
+                    var previewImage = editModal.querySelector('#instImagePreview');
+                    editModal.querySelector('#instRemoveImageCheckbox').checked = false;
+
+                    if (imageUrl && imageUrl.trim() !== '') {
+                        previewContainer.style.display = 'block';
+                        previewImage.src = imageUrl;
+                    } else {
+                        previewContainer.style.display = 'none';
+                        previewImage.src = '';
+                    }
+                });
+            }
+
+            // --- DELETE MODAL LOGIC ---
+            var deleteModal = document.getElementById('deleteInstitutionModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteInstId').value = button.getAttribute('data-inst-id');
+                    deleteModal.querySelector('#deleteInstName').textContent = button.getAttribute('data-inst-name');
+                });
+            }
+        });
+    </script>
+}

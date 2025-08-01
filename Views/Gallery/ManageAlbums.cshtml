@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Nadasdladany.Models.GalleryAlbum>
+@{
+    ViewData["Title"] = "Albumok Kezelése";
+}
+
+<div class="container content-padding">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title-primary">@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Vissza a galériába</a>
+            <button class="btn btn-lg btn-success shadow-sm" type="button"
+                    data-bs-toggle="modal" data-bs-target="#addAlbumModal">
+                <i class="bi bi-plus-circle-fill me-2"></i>Új album
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sorrend</th>
+                        <th>Cím</th>
+                        <th>Leírás</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var album in Model)
+                    {
+                        <tr>
+                            <td>@album.DisplayOrder</td>
+                            <td><strong>@album.Title</strong></td>
+                            <td>@album.Description</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editAlbumModal"
+                                        data-album-id="@album.Id"
+                                        data-album-title="@album.Title"
+                                        data-album-description="@album.Description"
+                                        data-album-order="@album.DisplayOrder">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteAlbumModal"
+                                        data-album-id="@album.Id"
+                                        data-album-title="@album.Title">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- "ADD ALBUM" MODAL -->
+<div class="modal fade" id="addAlbumModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Gallery" asp-action="CreateAlbum" method="post">
+                <div class="modal-header"><h5 class="modal-title">Új album létrehozása</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3"><label class="form-label">Album Címe</label><input type="text" name="Title" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Leírás (opcionális)</label><textarea name="Description" class="form-control" rows="3"></textarea></div>
+                    <div class="mb-3"><label class="form-label">Megjelenítési Sorrend</label><input type="number" name="DisplayOrder" class="form-control" value="99" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Létrehozás</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "EDIT ALBUM" MODAL -->
+<div class="modal fade" id="editAlbumModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Gallery" asp-action="EditAlbum" method="post">
+                <div class="modal-header"><h5 class="modal-title">Album szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editAlbumId" name="Id" />
+                    <div class="mb-3"><label class="form-label">Album Címe</label><input type="text" id="editAlbumTitle" name="Title" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Leírás</label><textarea id="editAlbumDescription" name="Description" class="form-control" rows="3"></textarea></div>
+                    <div class="mb-3"><label class="form-label">Megjelenítési Sorrend</label><input type="number" id="editAlbumOrder" name="DisplayOrder" class="form-control" required></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Mentés</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "DELETE ALBUM" MODAL -->
+<div class="modal fade" id="deleteAlbumModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Gallery" asp-action="DeleteAlbum" method="post">
+                <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteAlbumId" name="Id" />
+                    <p>Biztosan törölni szeretné a következő albumot? <br /><strong id="deleteAlbumTitle"></strong></p>
+                    <p class="text-danger fw-bold">Ezt csak akkor teheti meg, ha az album üres!</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Edit Modal Logic
+            var editModal = document.getElementById('editAlbumModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editAlbumId').value = button.getAttribute('data-album-id');
+                    editModal.querySelector('#editAlbumTitle').value = button.getAttribute('data-album-title');
+                    editModal.querySelector('#editAlbumDescription').value = button.getAttribute('data-album-description');
+                    editModal.querySelector('#editAlbumOrder').value = button.getAttribute('data-album-order');
+                });
+            }
+
+            // Delete Modal Logic
+            var deleteModal = document.getElementById('deleteAlbumModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteAlbumId').value = button.getAttribute('data-album-id');
+                    deleteModal.querySelector('#deleteAlbumTitle').textContent = button.getAttribute('data-album-title');
+                });
+            }
+        });
+    </script>
+}

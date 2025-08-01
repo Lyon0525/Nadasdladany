@@ -1,0 +1,194 @@
+﻿@model IEnumerable<Nadasdladany.ViewModels.AdminUserViewModel>
+@{
+    ViewData["Title"] = "Felhasználók Kezelése";
+}
+
+<div class="container content-padding">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title-primary">@ViewData["Title"]</h1>
+        <button class="btn btn-lg btn-success shadow-sm" type="button"
+                data-bs-toggle="modal" data-bs-target="#addAdminModal">
+            <i class="bi bi-plus-circle-fill me-2"></i>Új adminisztrátor
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Felhasználónév / E-mail</th>
+                        <th class="text-end">Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.Email</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                        data-bs-toggle="modal" data-bs-target="#editAdminModal"
+                                        data-user-id="@user.Id"
+                                        data-user-email="@user.Email">
+                                    <i class="bi bi-pencil-fill"></i> Szerkesztés
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                        data-bs-toggle="modal" data-bs-target="#deleteAdminModal"
+                                        data-user-id="@user.Id"
+                                        data-user-name="@user.UserName">
+                                    <i class="bi bi-trash-fill"></i> Törlés
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- "ADD ADMIN" MODAL -->
+<div class="modal fade" id="addAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="CreateAdmin" method="post">
+                <div class="modal-header"><h5 class="modal-title">Új adminisztrátor</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3"><label class="form-label">E-mail cím</label><input type="email" name="Email" class="form-control" required></div>
+
+                    <!-- FIX: Updated Password field -->
+                    <div class="mb-3">
+                        <label class="form-label">Jelszó</label>
+                        <div class="input-group">
+                            <input type="password" id="addPasswordInput" name="Password" class="form-control" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleAddPassword">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- FIX: Updated Confirm Password field -->
+                    <div class="mb-3">
+                        <label class="form-label">Jelszó megerősítése</label>
+                        <div class="input-group">
+                            <input type="password" id="addConfirmPasswordInput" name="ConfirmPassword" class="form-control" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleAddConfirmPassword">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Létrehozás</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "EDIT ADMIN" MODAL -->
+<div class="modal fade" id="editAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="EditAdmin" method="post">
+                <div class="modal-header"><h5 class="modal-title">Adminisztrátor szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editUserId" name="Id" />
+                    <div class="mb-3"><label class="form-label">E-mail cím / Felhasználónév</label><input type="email" id="editUserEmail" name="Email" class="form-control" required></div>
+                    <hr />
+
+                    <!-- FIX: Updated New Password field -->
+                    <div class="mb-3">
+                        <label class="form-label">Új jelszó (csak ha változtatni akarja)</label>
+                        <div class="input-group">
+                            <input type="password" id="editNewPasswordInput" name="NewPassword" class="form-control">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleEditNewPassword">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Hagyja üresen, ha nem akar jelszót módosítani.</div>
+                    </div>
+
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Mentés</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "DELETE ADMIN" MODAL -->
+<div class="modal fade" id="deleteAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="DeleteAdmin" method="post">
+                <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteUserId" name="Id" />
+                    <p>Biztosan törölni szeretné a következő adminisztrátort? <br /><strong id="deleteUserName"></strong></p>
+                    <p class="text-danger fw-bold">Ez a művelet nem vonható vissza!</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Edit Modal Logic
+            var editModal = document.getElementById('editAdminModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    editModal.querySelector('#editUserId').value = button.getAttribute('data-user-id');
+                    editModal.querySelector('#editUserEmail').value = button.getAttribute('data-user-email');
+
+                    // Also clear the password field every time the modal opens for security
+                    editModal.querySelector('#editNewPasswordInput').value = '';
+                });
+            }
+
+            function setupPasswordToggle(inputId, buttonId) {
+                const passwordInput = document.getElementById(inputId);
+                const toggleButton = document.getElementById(buttonId);
+
+                if (passwordInput && toggleButton) {
+                    toggleButton.addEventListener('mousedown', function () { passwordInput.type = 'text'; });
+                    toggleButton.addEventListener('mouseup', function () { passwordInput.type = 'password'; });
+                    toggleButton.addEventListener('mouseleave', function () { passwordInput.type = 'password'; });
+                }
+            }
+
+            // Apply logic to the "Add Admin" modal fields
+            setupPasswordToggle('addPasswordInput', 'toggleAddPassword');
+            setupPasswordToggle('addConfirmPasswordInput', 'toggleAddConfirmPassword');
+
+            // FIX: Apply the same logic to the "Edit Admin" modal's new password field
+            setupPasswordToggle('editNewPasswordInput', 'toggleEditNewPassword');
+
+            // Delete Modal Logic
+            var deleteModal = document.getElementById('deleteAdminModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteUserId').value = button.getAttribute('data-user-id');
+                    deleteModal.querySelector('#deleteUserName').textContent = button.getAttribute('data-user-name');
+                });
+            }
+        });
+    </script>
+}

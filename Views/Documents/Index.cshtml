@@ -1,4 +1,9 @@
-﻿@model IEnumerable<Nadasdladany.Models.Document>
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Globalization
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model IEnumerable<Nadasdladany.Models.Document>
 @{
     ViewData["Title"] = ViewData["ListTitle"] as string ?? "Dokumentumtár";
     var listTitle = ViewData["ListTitle"] as string ?? "Események"; // Should be Dokumentumok
@@ -25,16 +30,35 @@
         </div>
     }
 
-    <!-- Search Form -->
-    <div class="row justify-content-center mb-4 reveal-on-scroll" style="animation-delay:0.1s;">
-        <div class="col-lg-8">
-            <form asp-action="Index" method="get" class="document-search-form">
-                <input type="hidden" name="categorySlug" value="@currentCategorySlug" />
-                <div class="input-group input-group-lg shadow-sm">
-                    <input type="search" name="searchTerm" class="form-control" placeholder="Keresés a dokumentumok között..." value="@currentSearchTerm" aria-label="Dokumentum keresése">
-                    <button class="btn btn-primary" type="submit"><i class="bi bi-search me-2"></i>Keresés</button>
-                </div>
-            </form>
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <!-- NEW: Flex container to align search and add button -->
+            <div class="d-flex gap-3 align-items-center">
+                <!-- Search Form (now grows to fill space) -->
+                <form asp-action="Index" method="get" class="document-search-form flex-grow-1">
+                    <input type="hidden" name="categorySlug" value="@currentCategorySlug" />
+                    <div class="input-group input-group-lg shadow-sm">
+                        <input type="search" name="searchTerm" class="form-control" placeholder="Keresés a dokumentumok között..." value="@currentSearchTerm">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+
+                <!-- NEW: Admin "Add Document" button -->
+                @if (User.IsInRole("Administrator"))
+                {
+                    <div class="flex-shrink-0">
+                        <div class="btn-group shadow-sm" role="group">
+                            <button class="btn btn-lg btn-success" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#addDocumentModal" title="Új dokumentum feltöltése">
+                                <i class="bi bi-plus-circle-fill"></i> Új dokumentom
+                            </button>
+                            <a asp-action="ManageDocumentCategories" class="btn btn-lg btn-secondary" title="Kategóriák kezelése">
+                                <i class="bi bi-tags-fill"></i> Kategóriák szerkesztése
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
@@ -60,21 +84,12 @@
 
         <!-- Main Document List Content -->
         <div class="col-lg-9">
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="alert alert-danger">Hiba történt a kérés feldolgozása során.</div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
-            }
-
             @if (Model != null && Model.Any())
             {
                 <div class="list-group document-list shadow-sm">
                     @foreach (var doc in Model)
                     {
-                        <div class="list-group-item list-group-item-action flex-column align-items-start reveal-on-scroll" style="animation-delay: @(Model.ToList().IndexOf(doc) * 0.03)s;">
+                        <div class="list-group-item list-group-item-action flex-column align-items-start">
                             <div class="d-flex w-100 justify-content-between">
                                 <h5 class="mb-1 document-title">
                                     <i class="bi @(GetIconForFileType(doc.FileType)) me-2 text-primary"></i>
@@ -84,13 +99,38 @@
                             </div>
                             @if (!string.IsNullOrEmpty(doc.Description))
                             {
-                                <p class="mb-1 small document-description text-muted">@doc.Description</p>
+                                <p class="mb-1 small text-muted">@doc.Description</p>
                             }
-                            <div class="mt-2">
-                                <a asp-action="Download" asp-controller="Documents" asp-route-id="@doc.Id" class="btn btn-sm btn-success me-2">
-                                    <i class="bi bi-download me-1"></i> Letöltés (@FormatFileSize(doc.FileSizeInBytes))
-                                </a>
-                                <span class="badge bg-light text-dark border">@doc.DocumentCategory?.Name</span>
+
+                            <!-- Download button and Category Badge -->
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a asp-action="Download" asp-route-id="@doc.Id" class="btn btn-sm btn-success">
+                                        <i class="bi bi-download me-1"></i> Letöltés (@FormatFileSize(doc.FileSizeInBytes))
+                                    </a>
+                                    <span class="badge bg-light text-dark border ms-2">@doc.DocumentCategory?.Name</span>
+                                </div>
+
+                                <!-- ADMIN EDIT/DELETE CONTROLS -->
+                                @if (User.IsInRole("Administrator"))
+                                {
+                                    <div class="admin-document-controls">
+                                        <button class="btn btn-sm btn-outline-warning" title="Szerkesztés"
+                                                data-bs-toggle="modal" data-bs-target="#editDocumentModal"
+                                                data-doc-id="@doc.Id"
+                                                data-doc-title="@doc.Title"
+                                                data-doc-description="@doc.Description"
+                                                data-doc-categoryid="@doc.DocumentCategoryId">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger ms-1" title="Törlés"
+                                                data-bs-toggle="modal" data-bs-target="#deleteDocumentModal"
+                                                data-doc-id="@doc.Id"
+                                                data-doc-title="@doc.Title">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
@@ -148,6 +188,73 @@
     </div>
 </div>
 
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+{
+    <!-- "ADD DOCUMENT" MODAL -->
+    <div class="modal fade" id="addDocumentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Documents" asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div class="modal-header"><h5 class="modal-title">Új dokumentum feltöltése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3"><label for="addDocTitle" class="form-label">Dokumentum címe</label><input type="text" id="addDocTitle" name="Title" class="form-control" required></div>
+                        <div class="mb-3"><label for="addDocFile" class="form-label">Fájl kiválasztása</label><input type="file" id="addDocFile" name="File" class="form-control" required></div>
+                        <div class="mb-3"><label for="addDocCategory" class="form-label">Kategória</label><select id="addDocCategory" name="DocumentCategoryId" class="form-select" required>@foreach (var cat in categories){
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+</select></div>
+                    <div class="mb-3"><label for="addDocDesc" class="form-label">Rövid leírás (opcionális)</label><textarea id="addDocDesc" name="Description" class="form-control" rows="3"></textarea></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Feltöltés</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "EDIT DOCUMENT" MODAL -->
+<div class="modal fade" id="editDocumentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Documents" asp-action="Edit" method="post">
+                <div class="modal-header"><h5 class="modal-title">Dokumentum szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editDocId" name="Id" />
+                    <p class="small text-muted">Megjegyzés: A fájl tartalmát nem lehet módosítani. Ha másik fájlt szeretne, törölje a régit és töltse fel az újat.</p>
+                    <hr />
+                    <div class="mb-3"><label for="editDocTitle" class="form-label">Dokumentum címe</label><input type="text" id="editDocTitle" name="Title" class="form-control" required></div>
+                    <div class="mb-3"><label for="editDocCategory" class="form-label">Kategória</label><select id="editDocCategory" name="DocumentCategoryId" class="form-select" required>@foreach (var cat in categories){
+                    <option value="@cat.Id">@cat.Name</option>
+                                        }
+</select></div>
+                    <div class="mb-3"><label for="editDocDesc" class="form-label">Rövid leírás (opcionális)</label><textarea id="editDocDesc" name="Description" class="form-control" rows="3"></textarea></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- "DELETE DOCUMENT" MODAL -->
+<div class="modal fade" id="deleteDocumentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Documents" asp-action="Delete" method="post">
+                <div class="modal-header"><h5 class="modal-title">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteDocId" name="Id" />
+                    <p>Biztosan törölni szeretné a következő dokumentumot? <br /><strong id="deleteDocTitle"></strong></p>
+                    <p class="text-danger fw-bold">A művelet a fájlt is véglegesen törli a szerverről!</p>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+}
+
 @{
     // Helper functions for the view
     string GetIconForFileType(string fileType)
@@ -180,10 +287,46 @@
 <style>
     .document-list .list-group-item-action:hover,
     .document-list .list-group-item-action:focus {
-        background-color: #f8f9fa; /* Light hover effect */
+        background-color: #f8f9fa;
     }
 
     .document-title {
         color: var(--bs-primary);
     }
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- EDIT MODAL LOGIC ---
+            var editModal = document.getElementById('editDocumentModal');
+            if(editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var docId = button.getAttribute('data-doc-id');
+                    var docTitle = button.getAttribute('data-doc-title');
+                    var docDesc = button.getAttribute('data-doc-description');
+                    var docCatId = button.getAttribute('data-doc-categoryid');
+
+                    editModal.querySelector('#editDocId').value = docId;
+                    editModal.querySelector('#editDocTitle').value = docTitle;
+                    editModal.querySelector('#editDocDesc').value = docDesc;
+                    editModal.querySelector('#editDocCategory').value = docCatId;
+                });
+            }
+
+            // --- DELETE MODAL LOGIC ---
+            var deleteModal = document.getElementById('deleteDocumentModal');
+            if(deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    var docId = button.getAttribute('data-doc-id');
+                    var docTitle = button.getAttribute('data-doc-title');
+
+                    deleteModal.querySelector('#deleteDocId').value = docId;
+                    deleteModal.querySelector('#deleteDocTitle').textContent = docTitle;
+                });
+            }
+        });
+    </script>
+}

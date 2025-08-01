@@ -1,0 +1,41 @@
+﻿@model Nadasdladany.ViewModels.ContactFooterViewModel
+
+<div class="col-lg-3 col-md-6 footer-col">
+    <h6 class="text-uppercase fw-bold mb-4 footer-heading">Kapcsolat</h6>
+
+    @if (Model != null)
+    {
+        <ul class="list-unstyled mb-0 footer-contact-info">
+
+            @if (!string.IsNullOrEmpty(Model.Address))
+            {
+                <li><i class="bi bi-geo-alt-fill me-2"></i>@Model.Address</li>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+            {
+                <li><i class="bi bi-telephone-fill me-2"></i><a href="tel:@Model.PhoneNumber.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "")" class="footer-link">@Model.PhoneNumber</a></li>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Email))
+            {
+                <li><i class="bi bi-envelope-fill me-2"></i><a href="mailto:@Model.Email" class="footer-link">@Model.Email</a></li>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.OpeningHours))
+            {
+                <li>
+                    <i class="bi bi-clock-fill me-2 align-top"></i>
+                    <span>
+                        @Html.Raw(Model.OpeningHours)
+                    </span>
+                </li>
+            }
+
+        </ul>
+    }
+    else
+    {
+        <p class="small text-muted-footer">A kapcsolati adatok jelenleg nem elérhetőek.</p>
+    }
+</div>

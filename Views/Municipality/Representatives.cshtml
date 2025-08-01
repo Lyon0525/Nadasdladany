@@ -43,69 +43,101 @@
     <h3 class="text-primary mb-4 reveal-on-scroll text-center" style="animation-delay: 0.2s;">A Képviselő-testület Tagjai</h3>
 
     <div class="row g-4 justify-content-center">
-        @*
-            ADMINISTRATOR "ADD REPRESENTATIVE" CARD
-            This card is the first item in the grid and is only visible to administrators.
-        *@
-        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
-        {
-            <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
-                <div class="admin-add-card h-100" data-bs-toggle="modal" data-bs-target="#addRepModal" title="Új képviselő / tisztségviselő hozzáadása">
-                    <div class="admin-add-button"><i class="bi bi-plus-lg"></i></div>
-                </div>
-            </div>
-        }
-
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var rep in Model.OrderBy(r => r.DisplayOrder).ThenBy(r => r.Name))
+        <div class="row g-4 justify-content-center">
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
             {
-                // This logic correctly determines what title to display
-                var roleDisplay = rep.CustomTitleOverride;
-                if (string.IsNullOrEmpty(roleDisplay))
-                {
-                    roleDisplay = rep.Role switch
-                    {
-                        Nadasdladany.Models.RepresentativeRole.Polgarmester => "Polgármester",
-                        Nadasdladany.Models.RepresentativeRole.Alpolgarmester => "Alpolgármester",
-                        Nadasdladany.Models.RepresentativeRole.Kepviselo => "Képviselő",
-                        _ => rep.Role.ToString(),
-                    };
-                }
-
-                <div class="col-md-6 col-lg-4 d-flex align-items-stretch reveal-on-scroll">
-                    <div class="card representative-card h-100 shadow w-100 text-center">
-                        @if (!string.IsNullOrEmpty(rep.ImageUrl))
-                        {
-                            <img src="@Url.Content(rep.ImageUrl)" class="card-img-top representative-img mx-auto mt-3" alt="@rep.Name">
-                        }
-                        else
-                        {
-                            <img src="~/img/placeholder-avatar.png" class="card-img-top representative-img mx-auto mt-3" alt="Avatar">
-                        }
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@rep.Name</h5>
-                            <p class="card-text text-muted">@roleDisplay</p>
-                            <div class="mt-auto">
-                                @if (!string.IsNullOrEmpty(rep.Email))
-                                {
-                                    <a href="mailto:@rep.Email" class="btn btn-sm btn-outline-primary"><i class="bi bi-envelope-fill me-1"></i>E-mail</a>
-                                }
-                                @if (!string.IsNullOrEmpty(rep.PhoneNumber))
-                                {
-                                    <a href="tel:@rep.PhoneNumber.Replace(" ", "").Replace("(", "").Replace(")", "").Replace("-", "")" class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-telephone-fill me-1"></i>Telefon</a>
-                                }
-                            </div>
+                <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                    <div class="card h-100 card-add-new" data-bs-toggle="modal" data-bs-target="#addRepModal">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                            <div class="admin-add-button"><i class="bi bi-plus-lg"></i></div>
+                            <span class="d-block mt-3 text-muted fw-bold">Új tag hozzáadása</span>
                         </div>
                     </div>
                 </div>
             }
-        }
+
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var rep in Model.OrderBy(r => r.DisplayOrder).ThenBy(r => r.Name))
+                {
+                    var roleDisplay = rep.CustomTitleOverride ?? rep.Role.ToString(); // Simplified, can be expanded if needed
+
+                    <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                        <div class="card representative-card h-100 shadow w-100 text-center card-admin-container">
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <div class="card-admin-controls">
+                                    <button type="button" class="admin-card-btn btn-edit" title="Szerkesztés"
+                                            data-bs-toggle="modal" data-bs-target="#editRepModal"
+                                            data-rep-id="@rep.Id"
+                                            data-rep-name="@rep.Name"
+                                            data-rep-role="@Convert.ToInt32(rep.Role)"
+                                            data-rep-customtitle="@rep.CustomTitleOverride"
+                                            data-rep-email="@rep.Email"
+                                            data-rep-phone="@rep.PhoneNumber"
+                                            data-rep-imageurl="@rep.ImageUrl"
+                                            data-rep-bio="@rep.Biography"
+                                            data-rep-order="@rep.DisplayOrder">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button type="button" class="admin-card-btn btn-delete" title="Törlés"
+                                            data-bs-toggle="modal" data-bs-target="#deleteRepModal"
+                                            data-rep-id="@rep.Id"
+                                            data-rep-name="@rep.Name">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(rep.ImageUrl))
+                            {
+                                <img src="@Url.Content(rep.ImageUrl)" class="card-img-top representative-img mx-auto mt-3">
+                            }
+                            else
+                            {
+
+                                <img src="~/img/placeholder-avatar.png" class="card-img-top representative-img mx-auto mt-3">
+                            }
+
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@rep.Name</h5>
+                                <p class="card-text text-muted">@roleDisplay</p>
+
+                                <!-- FIX: RESTORED CONTACT BUTTONS AND ADDED BIO TOGGLE -->
+                                <div class="mt-auto pt-3 border-top">
+                                    @if (!string.IsNullOrEmpty(rep.Biography))
+                                    {
+                                        <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRep_@rep.Id" aria-expanded="false" aria-controls="collapseRep_@rep.Id">
+                                            <i class="bi bi-person-lines-fill me-1"></i>Bemutatkozás
+                                        </button>
+                                    }
+                                    @if (!string.IsNullOrEmpty(rep.Email))
+                                    {
+                                        <a href="mailto:@rep.Email" class="btn btn-sm btn-outline-primary"><i class="bi bi-envelope-fill me-1"></i>E-mail</a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(rep.PhoneNumber))
+                                    {
+                                        <a href="tel:@rep.PhoneNumber.Replace(" ", "").Replace("-", "")" class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone-fill me-1"></i>Telefon</a>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- NEW: Collapsible Biography section -->
+                            @if (!string.IsNullOrEmpty(rep.Biography))
+                            {
+                                <div class="collapse" id="collapseRep_@rep.Id">
+                                    <div class="card-footer text-start small text-muted">
+                                        @Html.Raw(rep.Biography)
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
         else if (!User.IsInRole("Administrator"))
         {
-            <div class="col-12">
-                <div class="alert alert-info text-center">A képviselő-testület tagjainak adatai feltöltés alatt.</div>
-            </div>
+            <div class="col-12"><div class="alert alert-info text-center">A képviselő-testület tagjainak adatai feltöltés alatt.</div></div>
         }
     </div>
 
@@ -147,7 +179,7 @@
     <div class="modal fade" id="addRepModal" tabindex="-1" aria-labelledby="addRepModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form asp-controller="Municipality" asp-action="CreateRepresentative" method="post">
+                    <form asp-controller="Municipality" asp-action="CreateRepresentative" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addRepModalLabel">Új Képviselő / Tisztségviselő felvétele</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -183,10 +215,10 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="ImageUrl" class="form-label">Fotó URL</label>
-                                <input type="text" name="ImageUrl" class="form-control" placeholder="/img/reps/minta-kepviselo.jpg">
-                            </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="ImageFile" class="form-label">Fotó feltöltése</label>
+                                    <input type="file" name="ImageFile" class="form-control" accept="image/*">
+                                </div>
                             <div class="col-md-4 mb-3">
                                 <label for="DisplayOrder" class="form-label fw-bold">Sorrend</label>
                                 <input type="number" name="DisplayOrder" class="form-control" value="99" required>
@@ -206,4 +238,123 @@
             </div>
         </div>
     </div>
+        <div class="modal fade" id="editRepModal" tabindex="-1" aria-labelledby="editRepModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <!-- Add enctype for file uploads -->
+                    <form asp-controller="Municipality" asp-action="EditRepresentative" method="post" enctype="multipart/form-data">
+                        <div class="modal-header"><h5 class="modal-title" id="editRepModalLabel">Képviselő adatainak szerkesztése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="editRepId" name="Id" />
+
+                            <div class="mb-3"><label for="editRepName" class="form-label fw-bold">Név</label><input type="text" id="editRepName" name="Name" class="form-control" required></div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label for="editRepRole" class="form-label fw-bold">Beosztás</label><select id="editRepRole" name="Role" class="form-select" asp-items="Html.GetEnumSelectList<RepresentativeRole>()" required></select></div>
+                                <div class="col-md-6 mb-3"><label for="editRepCustomTitle" class="form-label">Egyéni titulus</label><input type="text" id="editRepCustomTitle" name="CustomTitleOverride" class="form-control"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label for="editRepEmail" class="form-label">E-mail</label><input type="email" id="editRepEmail" name="Email" class="form-control"></div>
+                                <div class="col-md-6 mb-3"><label for="editRepPhone" class="form-label">Telefonszám</label><input type="tel" id="editRepPhone" name="PhoneNumber" class="form-control"></div>
+                            </div>
+
+                            <hr />
+
+                            <div class="row align-items-center">
+                                <div class="col-md-8 mb-3">
+                                    <label for="ImageFile" class="form-label">Új fotó feltöltése</label>
+                                    <input type="file" name="ImageFile" class="form-control" accept="image/*">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="editRepOrder" class="form-label fw-bold">Sorrend</label>
+                                    <input type="number" id="editRepOrder" name="DisplayOrder" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div id="repImagePreviewContainer" class="mt-2" style="display:none;">
+                                <label class="form-label">Jelenlegi fotó:</label>
+                                <div><img id="repImagePreview" src="" alt="Jelenlegi fotó" style="max-height: 100px; border-radius: 5px;" /></div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="RemoveCurrentImage" value="true" id="repRemoveImageCheckbox">
+                                    <label class="form-check-label" for="repRemoveImageCheckbox">Jelenlegi fotó törlése</label>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div class="mb-3"><label for="editRepBio" class="form-label">Bemutatkozás</label><textarea id="editRepBio" name="Biography" class="form-control" rows="4"></textarea></div>
+                        </div>
+                        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-primary">Módosítások mentése</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>  
+
+    @* --- "DELETE CONFIRMATION" MODAL (NEW) --- *@
+    <div class="modal fade" id="deleteRepModal" tabindex="-1" aria-labelledby="deleteRepModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-controller="Municipality" asp-action="DeleteRepresentative" method="post">
+                    <div class="modal-header"><h5 class="modal-title" id="deleteRepModalLabel">Törlés megerősítése</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="deleteRepId" name="Id" />
+                        <p>Biztosan törölni szeretné a következő személyt? <br /><strong id="deleteRepName"></strong></p>
+                        <p class="text-danger">A művelet nem vonható vissza!</p>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button><button type="submit" class="btn btn-danger">Igen, törlöm</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Logic for the EDIT modal ---
+            var editModal = document.getElementById('editRepModal');
+            if (editModal) {
+                    editModal.addEventListener('show.bs.modal', function (event) {
+                        var button = event.relatedTarget;
+
+                        editModal.querySelector('#editRepId').value = button.getAttribute('data-rep-id');
+                        editModal.querySelector('#editRepName').value = button.getAttribute('data-rep-name');
+                        editModal.querySelector('#editRepRole').value = button.getAttribute('data-rep-role');
+                        editModal.querySelector('#editRepCustomTitle').value = button.getAttribute('data-rep-customtitle');
+                        editModal.querySelector('#editRepEmail').value = button.getAttribute('data-rep-email');
+                        editModal.querySelector('#editRepPhone').value = button.getAttribute('data-rep-phone');
+                        editModal.querySelector('#editRepBio').value = button.getAttribute('data-rep-bio');
+                        editModal.querySelector('#editRepOrder').value = button.getAttribute('data-rep-order');
+
+                        var imageUrl = button.getAttribute('data-rep-imageurl');
+                        var previewContainer = editModal.querySelector('#repImagePreviewContainer');
+                        var previewImage = editModal.querySelector('#repImagePreview');
+                        var removeCheckbox = editModal.querySelector('#repRemoveImageCheckbox');
+                        var fileInput = editModal.querySelector('input[name="ImageFile"]');
+
+                        removeCheckbox.checked = false;
+                        fileInput.value = ''; 
+
+                        if (imageUrl && imageUrl.trim() !== '') {
+                            previewContainer.style.display = 'block';
+                            previewImage.src = imageUrl;
+                        } else {
+                            previewContainer.style.display = 'none';
+                            previewImage.src = '';
+                        }
+                    });
+            }
+
+            // --- Logic for the DELETE confirmation modal ---
+            var deleteModal = document.getElementById('deleteRepModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+                    deleteModal.querySelector('#deleteRepId').value = button.getAttribute('data-rep-id');
+                    deleteModal.querySelector('#deleteRepName').textContent = button.getAttribute('data-rep-name');
+                });
+            }
+        });
+    </script>
 }
