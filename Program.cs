@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,6 +47,8 @@ namespace Nadasdladany
                 options.SlidingExpiration = true;
             });
 
+            builder.Services.AddRazorPages();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -66,15 +69,19 @@ namespace Nadasdladany
             }
 
             // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                
             }
             else
             {
-                app.UseDeveloperExceptionPage();
+                // THIS IS THE CODE FOR PRODUCTION
+                app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
+
+            app.UseStatusCodePagesWithReExecute("/Home/HandleError/{0}");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -92,6 +99,8 @@ namespace Nadasdladany
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapRazorPages();
 
             app.Run();
 

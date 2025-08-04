@@ -45,7 +45,6 @@
                         <h2 class="section-title-primary">@Html.Raw(Model.WelcomeTitle)</h2>
                         <p class="lead">@Html.Raw(Model.WelcomeMessageParagraph1)</p>
                         <p>@Html.Raw(Model.WelcomeMessageParagraph2)</p>
-                        @* <p class="mt-3"><em>Tisztelettel,<br />@Html.Raw(Model.MayorName)<br />Polgármester</em></p> *@
                     </div>
                     <div class="col-lg-5 text-center">
 
@@ -57,7 +56,6 @@
                 </div>
             </section>
 
-            <!-- REVISED: TempData messages now have dismissible close buttons -->
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -191,7 +189,7 @@
 
 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
 {
-    <div class="modal fade" id="editWelcomeMessageModal" tabindex="-1" aria-labelledby="editWelcomeModalLabel" aria-hidden="true">
+    <div class.modal fade" id="editWelcomeMessageModal" tabindex="-1" aria-labelledby="editWelcomeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form asp-controller="Home" asp-action="UpdateWelcomeMessage" method="post">
@@ -203,17 +201,19 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="WelcomeTitle" class="form-label fw-bold">Cím</label>
-                            <input type="text" id="editWelcomeTitle" name="WelcomeTitle" class="form-control" value="@Model.WelcomeTitle" required>
+                            <input type="text" name="WelcomeTitle" class="form-control" value="@Html.Raw(Model.WelcomeTitle)" required>
                         </div>
 
+                        <!-- CHANGE #1: The <textarea> now has a specific ID for TinyMCE to target -->
                         <div class="mb-3">
-                            <label for="WelcomeMessageParagraph1" class="form-label">Üdvözlő üzenet (1. bekezdés)</label>
-                            <textarea id="editWelcomePara1" name="WelcomeMessageParagraph1" class="form-control" rows="5">@Model.WelcomeMessageParagraph1</textarea>
+                            <label for="welcomeEditor1" class="form-label">Üdvözlő üzenet (1. bekezdés)</label>
+                            <textarea id="welcomeEditor1" name="WelcomeMessageParagraph1" class="form-control" rows="5">@Model.WelcomeMessageParagraph1</textarea>
                         </div>
 
+                        <!-- CHANGE #1: This <textarea> also gets a unique ID -->
                         <div class="mb-3">
-                            <label for="WelcomeMessageParagraph2" class="form-label">Üdvözlő üzenet (2. bekezdés)</label>
-                            <textarea id="editWelcomePara2" name="WelcomeMessageParagraph2" class="form-control" rows="5">@Model.WelcomeMessageParagraph2</textarea>
+                            <label for="welcomeEditor2" class="form-label">Üdvözlő üzenet (2. bekezdés)</label>
+                            <textarea id="welcomeEditor2" name="WelcomeMessageParagraph2" class="form-control" rows="5">@Model.WelcomeMessageParagraph2</textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -224,4 +224,25 @@
             </div>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            tinymce.init({
+                selector: '#welcomeEditor1, #welcomeEditor2',
+                license_key: 'gpl',
+                height: 250,
+                menubar: false, 
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                ],
+                toolbar: 'undo redo | blocks | ' +
+                         'bold italic underline | bullist numlist | ' +
+                         'removeformat | help'
+            });
+        });
+    </script>
 }

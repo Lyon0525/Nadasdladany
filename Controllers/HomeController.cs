@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Nadasdladany.Data;
 using Nadasdladany.Models;
 using Nadasdladany.ViewModels;
 using System.Diagnostics;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Nadasdladany.Controllers
 {
@@ -20,6 +21,35 @@ namespace Nadasdladany.Controllers
             _logger = logger;
             _context = context;
             _cache = cache;
+        }
+
+        [Route("/Home/Error")]
+        [AllowAnonymous]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            var exceptionHandlerPathFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [Route("/Home/HandleError/{statusCode}")]
+        [AllowAnonymous]
+        public IActionResult HandleError(int statusCode)
+        {
+            // This action handles specific status code errors, like 404
+            var statusCodeResult = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+
+            switch (statusCode)
+            {
+                case 404:
+                    // For a 404 error, we show our custom 404 page.
+                    // We look for the view in /Views/Shared/404.cshtml
+                    return View("404");
+            }
+
+            // For any other error, you can fall back to a generic error page
+            // or the default behavior.
+            return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
         public async Task<IActionResult> Index()

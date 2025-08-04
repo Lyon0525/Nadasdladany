@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "_StatusLayout";
+    ViewData["Title"] = "Oldal nem található";
+}
+
+<div class="text-center">
+    <img src="~/img/nadasdladany-cimer.png" alt="Nádasdladány Címer" style="max-width: 150px;" class="mb-4 opacity-75">
+
+    <h1 class="display-1 fw-bold text-primary">404</h1>
+    <p class="h2">Oldal nem található</p>
+    <p class="lead text-muted">
+        Sajnáljuk, de a keresett oldal nem létezik, vagy áthelyezésre került.
+    </p>
+    <hr class="my-4">
+    <p>Lehet, hogy elgépelt valamit, vagy egy elavult linket követett.</p>
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg px-4 gap-3">
+            <i class="bi bi-house-door-fill me-1"></i> Vissza a főoldalra
+        </a>
+        <a asp-controller="Contact" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+            <i class="bi bi-envelope-fill me-1"></i> Kapcsolatfelvétel
+        </a>
+    </div>
+</div>

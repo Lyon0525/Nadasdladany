@@ -15,6 +15,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
+    <script src="~/lib/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
     @await RenderSectionAsync("Styles", required: false)
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -24,20 +26,20 @@
     <style>
         .admin-mode-indicator {
             position: fixed;
-            bottom: 20px; /* Adjust as needed */
-            right: 20px; /* Adjust as needed */
+            bottom: 20px; 
+            right: 20px; 
             padding: 6px 12px;
-            background-color: transparent; /* Slightly transparent white for light theme visibility */
-            border: 2px solid black; /* Uses your main text color (dark) for border */
-            color: black; /* Uses your main text color (dark) for text */
-            border-radius: 20px; /* Pill shape */
+            background-color: transparent,
+            border: 2px solid black; 
+            color: black; 
+            border-radius: 20px; 
             font-size: 1rem;
             font-weight: 500;
             z-index: 1050;
             cursor: default;
             opacity: 0.85;
             transition: opacity 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
 
             .admin-mode-indicator:hover {
@@ -50,20 +52,44 @@
             }
 
             .admin-mode-indicator form {
-                display: inline; /* To keep it on the same line */
+                display: inline; 
             }
 
             .admin-mode-indicator .btn-link {
-                color: inherit !important; /* Inherit color from .admin-mode-indicator */
+                color: inherit !important; 
                 text-decoration: none !important;
                 padding: 0;
                 vertical-align: baseline;
-                line-height: 1; /* Ensure icon aligns well */
+                line-height: 1; 
             }
 
-                .admin-mode-indicator .btn-link:hover i.bi {
-                    color: black; /* Or your danger color */
+            .admin-mode-indicator .btn-link:hover i.bi {
+                color: black; 
+            }
+
+            .navbar-search-form {
+                display: none;
+                width: 100%;
+                padding: 0.5rem 1rem;
+            }
+
+            @@media (min-width: 992px) {
+                .navbar-search-form {
+                    display: flex;
+                    width: auto; 
+                    padding: 0;
                 }
+            }
+
+            .search-toggle-icon {
+                display: block;
+            }
+
+            @@media (min-width: 992px) {
+                .search-toggle-icon {
+                    display: none; 
+                }
+        }
     </style>
 </head>
 <body>
@@ -134,8 +160,21 @@
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contact" ? "active" : "")" asp-controller="Contact" asp-action="Index"><i class="bi bi-envelope-fill me-1"></i>Kapcsolat</a>
                         </li>
-                        @* Add other nav items as needed *@
                     </ul>
+                    <ul class="navbar-nav d-lg-none">
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#navbarSearch" role="button" aria-expanded="false" aria-controls="navbarSearch">
+                                <i class="bi bi-search"></i> Keresés
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="collapse d-lg-flex" id="navbarSearch">
+                        <form asp-controller="Search" asp-action="Index" method="get" class="d-flex mt-3 mt-lg-0 ms-lg-3" role="search">
+                            <input class="form-control me-2" type="search" name="query" placeholder="Keresés az oldalon..." aria-label="Keresés">
+                            <button class="btn btn-success" type="submit">Keresés</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </nav>

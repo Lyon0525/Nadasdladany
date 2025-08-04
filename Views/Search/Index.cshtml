@@ -1,0 +1,35 @@
+﻿@model IEnumerable<Nadasdladany.ViewModels.SearchResultViewModel>
+@{
+    ViewData["Title"] = $"Keresési eredmények: '{ViewBag.SearchQuery}'";
+}
+
+<div class="container content-padding">
+    <div class="page-header mb-4">
+        <h1>Keresési eredmények</h1>
+        <p class="lead text-muted-color">Találatok a következőre: <span class="fw-bold">"@ViewBag.SearchQuery"</span></p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="list-group shadow-sm">
+            @foreach (var result in Model)
+            {
+                <a href="@result.Url" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-primary">
+                            <i class="bi @result.TypeIconCssClass me-2"></i>@result.Title
+                        </h5>
+                        <span class="badge bg-secondary">@result.ResultType</span>
+                    </div>
+                    <p class="mb-1 small text-muted">@result.Description</p>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">
+            Nincs találat a(z) "@ViewBag.SearchQuery" kifejezésre. Próbáljon meg más kulcsszavakat használni!
+        </div>
+    }
+</div>
