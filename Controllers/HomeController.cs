@@ -110,7 +110,6 @@ namespace Nadasdladany.Controllers
                 await UpdateSettingAsync("WelcomeTitle", model.WelcomeTitle);
                 await UpdateSettingAsync("WelcomeMessageParagraph1", model.WelcomeMessageParagraph1);
                 await UpdateSettingAsync("WelcomeMessageParagraph2", model.WelcomeMessageParagraph2);
-                await UpdateSettingAsync("MayorName", model.MayorName);
 
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Üdvözlõ üzenet sikeresen frissítve!";

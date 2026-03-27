@@ -32,7 +32,6 @@
         </div>
     </div>
 
-    @* Display Success/Error messages after form submission *@
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -115,8 +114,12 @@
                             @if (!string.IsNullOrEmpty(ev.Description))
                             {
                                 <div class="event-description-truncate small text-muted mb-3 flex-grow-1">
-                                    @Html.Raw(System.Text.RegularExpressions.Regex.Replace(ev.Description, "<.*?>", String.Empty).Substring(0, Math.Min(ev.Description.Length, 120)))
-                                    @if (ev.Description.Length > 120)
+                                    @{
+                                        var plainDescription = System.Text.RegularExpressions.Regex.Replace(ev.Description, "<.*?>", string.Empty);
+                                        var truncatedDescription = plainDescription.Substring(0, Math.Min(plainDescription.Length, 120));
+                                    }
+                                    @truncatedDescription
+                                    @if (plainDescription.Length > 120)
                                     {
                                         <span>...</span>
                                     }
@@ -143,12 +146,10 @@
         }
     </div>
 
-    <!-- Pagination Controls -->
     @if (totalPages > 1)
     {
         <nav aria-label="Események lapozása" class="mt-5 d-flex justify-content-center">
             <ul class="pagination shadow-sm">
-                <!-- First and Previous Buttons -->
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
                     <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="1" aria-label="Első"><span aria-hidden="true">««</span></a>
                 </li>
@@ -156,7 +157,6 @@
                     <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@(currentPage - 1)" aria-label="Előző"><span aria-hidden="true">«</span></a>
                 </li>
 
-                <!-- Dynamic Page Numbers -->
                 @{
                     int startPage = Math.Max(1, currentPage - 2);
                     int endPage = Math.Min(totalPages, currentPage + 2);
@@ -176,7 +176,6 @@
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 }
 
-                <!-- Next and Last Buttons -->
                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
                     <a class="page-link" asp-action="Index" asp-route-filter="@currentFilter" asp-route-page="@(currentPage + 1)" aria-label="Következő"><span aria-hidden="true">»</span></a>
                 </li>
@@ -188,7 +187,6 @@
     }
 </div>
 
-<!-- Inline Styles for Event Cards -->
 <style>
     .event-card {
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -254,7 +252,7 @@
 
                         <div class="mb-3">
                             <label for="Description" class="form-label">Leírás (opcionális)</label>
-                            <textarea name="Description" class="form-control" rows="5"></textarea>
+                            <textarea id="addEventDescription" name="Description" class="form-control" rows="5"></textarea>
                         </div>
 
                         <div class="row">
@@ -297,7 +295,7 @@
             </div>
         </div>
     </div>
-    @* --- "EDIT EVENT" MODAL (NEW) --- *@
+
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -319,7 +317,6 @@
         </div>
     </div>
 
-    @* --- "DELETE CONFIRMATION" MODAL (NEW) --- *@
     <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -341,12 +338,37 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Helper function to strip HTML tags for simple text areas
-            function stripHtml(html) {
-                if (!html) return "";
-                let tempDiv = document.createElement("div");
-                tempDiv.innerHTML = html;
-                return tempDiv.textContent || tempDiv.innerText || "";
+
+            // --- REUSABLE TinyMCE FUNCTIONS ---
+            function initTinyMCE(selector) {
+                removeTinyMCE(selector); // Prevent multiple instances
+                tinymce.init({
+                    selector: selector,
+                    license_key: 'gpl',
+                    height: 300, // Slightly shorter for event descriptions
+                    menubar: false,
+                    plugins: [ 'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code', 'help', 'wordcount', 'table' ],
+                    toolbar: 'undo redo | blocks | bold italic underline | forecolor backcolor | bullist numlist | removeformat',
+                    promotion: false
+                });
+            }
+
+            function removeTinyMCE(selector) {
+                const editorInstance = tinymce.get(selector.substring(1));
+                if (editorInstance) {
+                    editorInstance.destroy();
+                }
+            }
+
+            // --- Logic for the ADD modal ---
+            var addModal = document.getElementById('addEventModal');
+            if (addModal) {
+                addModal.addEventListener('show.bs.modal', function() {
+                    initTinyMCE('#addEventDescription'); // Initialize for ADD form
+                });
+                addModal.addEventListener('hide.bs.modal', function() {
+                    removeTinyMCE('#addEventDescription'); // Cleanup on ADD form close
+                });
             }
 
             // --- Logic for the EDIT modal ---
@@ -365,10 +387,19 @@
                     var eventUrl = button.getAttribute('data-event-eventurl');
                     var isAllDay = button.getAttribute('data-event-isallday') === 'true';
 
-                    // Populate form fields
+                    // --- THE FIX ---
+                    // 1. Get a reference to the textarea.
+                    var descriptionTextarea = editModal.querySelector('#editEventDescription');
+
+                    // 2. Set the value of the textarea *FIRST*, using the raw HTML content.
+                    descriptionTextarea.value = description || '';
+
+                    // 3. *NOW* initialize TinyMCE on it.
+                    initTinyMCE('#editEventDescription');
+
+                    // Populate the rest of the form fields
                     editModal.querySelector('#editEventId').value = id;
                     editModal.querySelector('#editEventTitle').value = title;
-                    editModal.querySelector('#editEventDescription').value = stripHtml(description); // Clean description
                     editModal.querySelector('#editEventStartDate').value = startDate;
                     editModal.querySelector('#editEventEndDate').value = endDate;
                     editModal.querySelector('#editEventLocation').value = location;
@@ -376,9 +407,14 @@
                     editModal.querySelector('#editEventEventUrl').value = eventUrl;
                     editModal.querySelector('#editEventIsAllDay').checked = isAllDay;
                 });
+
+                // Add the cleanup listener for the edit modal as well
+                editModal.addEventListener('hide.bs.modal', function() {
+                    removeTinyMCE('#editEventDescription');
+                });
             }
 
-            // --- Logic for the DELETE confirmation modal ---
+            // --- Logic for the DELETE confirmation modal (Unchanged) ---
             var deleteModal = document.getElementById('deleteEventModal');
             if (deleteModal) {
                 deleteModal.addEventListener('show.bs.modal', function(event) {

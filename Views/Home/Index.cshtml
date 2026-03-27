@@ -189,7 +189,7 @@
 
 @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
 {
-    <div class.modal fade" id="editWelcomeMessageModal" tabindex="-1" aria-labelledby="editWelcomeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editWelcomeMessageModal" tabindex="-1" aria-labelledby="editWelcomeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form asp-controller="Home" asp-action="UpdateWelcomeMessage" method="post">
@@ -204,13 +204,11 @@
                             <input type="text" name="WelcomeTitle" class="form-control" value="@Html.Raw(Model.WelcomeTitle)" required>
                         </div>
 
-                        <!-- CHANGE #1: The <textarea> now has a specific ID for TinyMCE to target -->
                         <div class="mb-3">
                             <label for="welcomeEditor1" class="form-label">Üdvözlő üzenet (1. bekezdés)</label>
                             <textarea id="welcomeEditor1" name="WelcomeMessageParagraph1" class="form-control" rows="5">@Model.WelcomeMessageParagraph1</textarea>
                         </div>
 
-                        <!-- CHANGE #1: This <textarea> also gets a unique ID -->
                         <div class="mb-3">
                             <label for="welcomeEditor2" class="form-label">Üdvözlő üzenet (2. bekezdés)</label>
                             <textarea id="welcomeEditor2" name="WelcomeMessageParagraph2" class="form-control" rows="5">@Model.WelcomeMessageParagraph2</textarea>
@@ -220,6 +218,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Mégse</button>
                         <button type="submit" class="btn btn-primary">Módosítások mentése</button>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -229,20 +228,40 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            tinymce.init({
-                selector: '#welcomeEditor1, #welcomeEditor2',
-                license_key: 'gpl',
-                height: 250,
-                menubar: false, 
-                plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
-                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
-                ],
-                toolbar: 'undo redo | blocks | ' +
-                         'bold italic underline | bullist numlist | ' +
-                         'removeformat | help'
-            });
+
+            var welcomeModal = document.getElementById('editWelcomeMessageModal');
+            if (welcomeModal) {
+
+                // Event fires just BEFORE the modal is shown
+                welcomeModal.addEventListener('show.bs.modal', function(event) {
+
+                    // Initialize TinyMCE for the textareas INSIDE this specific modal
+                    tinymce.init({
+                        selector: '#welcomeEditor1, #welcomeEditor2',
+                        license_key: 'gpl',
+                        height: 250,
+                        menubar: false,
+                        plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                        'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
+                        'fullscreen', 'help', 'wordcount', 'table'
+                        ],
+                        toolbar: [
+                            'undo redo | blocks | bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist',
+                            'table | fullscreen preview | removeformat'
+                        ],
+                        promotion: false
+                    });
+                });
+
+                // Event fires just BEFORE the modal is hidden
+                welcomeModal.addEventListener('hide.bs.modal', function(event) {
+                    // It's good practice to destroy the editor instances when the modal closes.
+                    // This prevents issues if the modal is opened and closed multiple times.
+                    tinymce.remove('#welcomeEditor1');
+                    tinymce.remove('#welcomeEditor2');
+                });
+            }
         });
     </script>
 }

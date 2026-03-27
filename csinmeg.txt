@@ -1,0 +1,3 @@
+-szerkeszto az add/edit funkciohoz (polgarmesteri hivatal oldaltol)
+
+-uj felhasznalonal ne dobjon ki a modal mert szar a jelszo + uj jelszonal ne csak 1x kelljen beirni hanem legyen jelszovaltas is
